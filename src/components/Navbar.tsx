@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Facebook, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import logo from '@/assets/logo.png';
 
 const navLinks = [
   { name: 'Home', href: '#home' },
@@ -36,18 +37,8 @@ export const Navbar = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <a href="#home" className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center">
-              <span className="font-display font-bold text-accent-foreground text-lg">KP</span>
-            </div>
-            <div className="hidden sm:block">
-              <span className="font-display font-bold text-xl tracking-tight text-foreground">
-                KEEP PEDALING
-              </span>
-              <span className="block text-xs text-muted-foreground uppercase tracking-widest">
-                Foundation
-              </span>
-            </div>
+          <a href="#home" className="flex items-center">
+            <img src={logo} alt="Keep Pedaling Foundation" className="h-12 w-auto" />
           </a>
 
           {/* Desktop Navigation */}
@@ -65,10 +56,10 @@ export const Navbar = () => {
 
           {/* Social & Donate */}
           <div className="hidden lg:flex items-center gap-4">
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+            <a href="https://www.facebook.com/people/Keep-Pedaling-Foundation/61565706314697/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
               <Facebook size={20} />
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+            <a href="https://www.instagram.com/keeppedalingfoundation" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
               <Instagram size={20} />
             </a>
             <Button variant="default" className="ml-4 font-display uppercase tracking-wider">
@@ -107,10 +98,10 @@ export const Navbar = () => {
                 </a>
               ))}
               <div className="flex items-center gap-4 pt-4 border-t border-border">
-                <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a href="https://www.facebook.com/people/Keep-Pedaling-Foundation/61565706314697/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                   <Facebook size={24} />
                 </a>
-                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
+                <a href="https://www.instagram.com/keeppedalingfoundation" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                   <Instagram size={24} />
                 </a>
               </div>

@@ -1,4 +1,5 @@
 import { Facebook, Instagram, Mail, MapPin } from 'lucide-react';
+import logo from '@/assets/logo.png';
 
 const footerLinks = {
   navigation: [
@@ -22,18 +23,8 @@ export const Footer = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center">
-                <span className="font-display font-bold text-accent-foreground text-lg">KP</span>
-              </div>
-              <div>
-                <span className="font-display font-bold text-xl tracking-tight text-foreground">
-                  KEEP PEDALING
-                </span>
-                <span className="block text-xs text-muted-foreground uppercase tracking-widest">
-                  Foundation
-                </span>
-              </div>
+            <div className="mb-6">
+              <img src={logo} alt="Keep Pedaling Foundation" className="h-16 w-auto" />
             </div>
             <p className="text-muted-foreground italic text-lg mb-6">
               "Biking for the culture, healing for the soul"
