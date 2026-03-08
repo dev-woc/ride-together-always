@@ -1,10 +1,34 @@
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
+import { useEffect, useRef } from 'react';
+import Swiper from 'swiper';
+import 'swiper/css';
+import './Gallery.css';
 
 const images = Object.values(
   import.meta.glob('@/assets/gallery/*', { eager: true, query: '?url', import: 'default' })
 ) as string[];
 
 export const Gallery = () => {
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const swiperRef = useRef<Swiper | null>(null);
+
+  useEffect(() => {
+    swiperRef.current = new Swiper('.gallery-swiper .swiper-container', {
+      loop: true,
+      centeredSlides: true,
+      slidesPerView: 'auto',
+      spaceBetween: 16,
+    });
+
+    // Trigger load animation
+    requestAnimationFrame(() => {
+      sectionRef.current?.classList.add('loaded');
+    });
+
+    return () => {
+      swiperRef.current?.destroy(true, true);
+    };
+  }, []);
+
   return (
     <section id="gallery" className="py-20 bg-background">
       <div className="container mx-auto px-4">
@@ -15,24 +39,16 @@ export const Gallery = () => {
           </p>
         </div>
 
-        <div className="relative mx-auto max-w-4xl px-12">
-          <Carousel opts={{ loop: true }} className="w-full">
-            <CarouselContent>
+        <div ref={sectionRef} className="gallery-swiper">
+          <div className="swiper-container">
+            <div className="swiper-wrapper">
               {images.map((src, i) => (
-                <CarouselItem key={src}>
-                  <div className="overflow-hidden rounded-2xl aspect-[16/9]">
-                    <img
-                      src={src}
-                      alt={`Community photo ${i + 1}`}
-                      className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
-                    />
-                  </div>
-                </CarouselItem>
+                <div className="swiper-slide" key={src}>
+                  <img src={src} alt={`Community photo ${i + 1}`} />
+                </div>
               ))}
-            </CarouselContent>
-            <CarouselPrevious className="left-0" />
-            <CarouselNext className="right-0" />
-          </Carousel>
+            </div>
+          </div>
         </div>
       </div>
     </section>
