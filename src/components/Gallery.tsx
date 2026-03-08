@@ -1,15 +1,8 @@
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import communityCycling from '@/assets/community-cycling.jpg';
-import cyclingDetail from '@/assets/cycling-detail.jpg';
-import heroCycling from '@/assets/hero-cycling.jpg';
-import wellnessCycling from '@/assets/wellness-cycling.jpg';
 
-const slides = [
-  { src: communityCycling, alt: 'Community cycling event' },
-  { src: heroCycling, alt: 'Cyclists riding through urban streets' },
-  { src: wellnessCycling, alt: 'Wellness cycling session' },
-  { src: cyclingDetail, alt: 'Cycling detail shot' },
-];
+const images = Object.values(
+  import.meta.glob('@/assets/gallery/*', { eager: true, query: '?url', import: 'default' })
+) as string[];
 
 export const Gallery = () => {
   return (
@@ -25,12 +18,12 @@ export const Gallery = () => {
         <div className="relative mx-auto max-w-4xl px-12">
           <Carousel opts={{ loop: true }} className="w-full">
             <CarouselContent>
-              {slides.map((slide) => (
-                <CarouselItem key={slide.src}>
+              {images.map((src, i) => (
+                <CarouselItem key={src}>
                   <div className="overflow-hidden rounded-2xl aspect-[16/9]">
                     <img
-                      src={slide.src}
-                      alt={slide.alt}
+                      src={src}
+                      alt={`Community photo ${i + 1}`}
                       className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
                     />
                   </div>
