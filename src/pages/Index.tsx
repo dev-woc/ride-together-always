@@ -7,6 +7,7 @@ import { Events } from '@/components/Events';
 import { Resources } from '@/components/Resources';
 import { Donate } from '@/components/Donate';
 import { Footer } from '@/components/Footer';
+import { StayConnected } from '@/components/StayConnected';
 
 const Index = () => {
   return (
@@ -19,6 +20,7 @@ const Index = () => {
       <Events />
       <Resources />
       <Donate />
+      <StayConnected />
       <Footer />
     </div>
   );
