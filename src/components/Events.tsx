@@ -14,7 +14,7 @@ const events = [
     featured: true,
   },
   {
-    title: 'Mental Health Awareness Ride',
+    title: 'The Impact Ride',
     date: 'Coming Spring 2026',
     time: 'TBA',
     location: 'Orlando Metro Area',

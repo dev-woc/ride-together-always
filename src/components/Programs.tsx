@@ -13,16 +13,16 @@ const programs = [
     image: cyclingDetail,
   },
   {
-    icon: Brain,
-    title: 'Mental Health Resources',
-    description: 'Access a wide range of resources tailored to support your mental well-being, from therapy connections to practical wellness tips.',
-    image: wellnessCycling,
-  },
-  {
     icon: Heart,
     title: 'Cycle of Support',
     description: 'Our signature program connecting cyclists with mental health professionals for transformative healing journeys.',
     image: null,
+  },
+  {
+    icon: Brain,
+    title: 'Mental Health Resources',
+    description: 'Access a wide range of resources tailored to support your mental well-being, from therapy connections to practical wellness tips.',
+    image: wellnessCycling,
   },
   {
     icon: Users,

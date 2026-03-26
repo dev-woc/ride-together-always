@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Facebook, Instagram } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import logo from '@/assets/logo.png';
 
@@ -52,6 +53,12 @@ export const Navbar = () => {
                 {link.name}
               </a>
             ))}
+            <Link
+              to="/community"
+              className="font-display text-sm uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Our Community
+            </Link>
           </div>
 
           {/* Social & Donate */}
@@ -97,6 +104,13 @@ export const Navbar = () => {
                   {link.name}
                 </a>
               ))}
+              <Link
+                to="/community"
+                onClick={() => setIsOpen(false)}
+                className="font-display text-lg uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors py-2"
+              >
+                Our Community
+              </Link>
               <div className="flex items-center gap-4 pt-4 border-t border-border">
                 <a href="https://www.facebook.com/people/Keep-Pedaling-Foundation/61565706314697/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                   <Facebook size={24} />
