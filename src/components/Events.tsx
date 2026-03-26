@@ -14,14 +14,6 @@ const events = [
     featured: true,
   },
   {
-    title: 'Critical Mass Orlando',
-    date: 'Last Friday Monthly',
-    time: '6:30 PM',
-    location: 'Downtown Orlando',
-    description: 'Celebrate cycling culture with the city-wide group ride through downtown.',
-    featured: false,
-  },
-  {
     title: 'Mental Health Awareness Ride',
     date: 'Coming Spring 2026',
     time: 'TBA',
