@@ -6,11 +6,11 @@ import { Button } from '@/components/ui/button';
 import logo from '@/assets/logo.png';
 
 const navLinks = [
-  { name: 'Home', href: '#home' },
-  { name: 'About', href: '#about' },
-  { name: 'Programs', href: '#programs' },
-  { name: 'Events', href: '#events' },
-  { name: 'Contact', href: '#contact' },
+  { name: 'Home', href: '/#home' },
+  { name: 'About', href: '/#about' },
+  { name: 'Programs', href: '/#programs' },
+  { name: 'Events', href: '/#events' },
+  { name: 'Contact', href: '/#contact' },
 ];
 
 export const Navbar = () => {
@@ -37,7 +37,7 @@ export const Navbar = () => {
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <a href="#home" className="flex items-center">
+          <a href="/" className="flex items-center">
             <img src={logo} alt="Keep Pedaling Foundation" className="h-12 w-auto" />
           </a>
 
