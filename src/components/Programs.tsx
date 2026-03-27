@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
-import { Link } from 'react-router-dom';
 import { Bike, Heart, Users, Brain } from 'lucide-react';
 import cyclingDetail from '@/assets/cycling-detail.jpg';
 import wellnessCycling from '@/assets/wellness-cycling.jpg';
@@ -12,6 +11,7 @@ const programs = [
     title: 'Cycling Club',
     description: 'Join our community rides designed for all skill levels. Experience the joy of cycling while connecting with like-minded individuals.',
     image: cyclingDetail,
+    link: '/#events',
   },
   {
     icon: Heart,
@@ -92,23 +92,13 @@ export const Programs = () => {
                 <p className="text-muted-foreground leading-relaxed">
                   {program.description}
                 </p>
-                {program.link ? (
-                  <Link
-                    to={program.link}
-                    className="inline-flex items-center gap-2 mt-4 text-primary font-display text-sm uppercase tracking-wider hover:gap-3 transition-all"
-                  >
-                    Learn More
-                    <span>→</span>
-                  </Link>
-                ) : (
-                  <a
-                    href="#contact"
-                    className="inline-flex items-center gap-2 mt-4 text-primary font-display text-sm uppercase tracking-wider hover:gap-3 transition-all"
-                  >
-                    Learn More
-                    <span>→</span>
-                  </a>
-                )}
+                <a
+                  href={program.link ?? '/#contact'}
+                  className="inline-flex items-center gap-2 mt-4 text-primary font-display text-sm uppercase tracking-wider hover:gap-3 transition-all"
+                >
+                  Learn More
+                  <span>→</span>
+                </a>
               </div>
             </motion.div>
           ))}
