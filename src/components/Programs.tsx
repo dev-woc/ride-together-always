@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
+import { Link } from 'react-router-dom';
 import { Bike, Heart, Users, Brain } from 'lucide-react';
 import cyclingDetail from '@/assets/cycling-detail.jpg';
 import wellnessCycling from '@/assets/wellness-cycling.jpg';
@@ -23,6 +24,7 @@ const programs = [
     title: 'Mental Health Resources',
     description: 'Access a wide range of resources tailored to support your mental well-being, from therapy connections to practical wellness tips.',
     image: wellnessCycling,
+    link: '/resources',
   },
   {
     icon: Users,
@@ -90,13 +92,23 @@ export const Programs = () => {
                 <p className="text-muted-foreground leading-relaxed">
                   {program.description}
                 </p>
-                <a
-                  href="#contact"
-                  className="inline-flex items-center gap-2 mt-4 text-primary font-display text-sm uppercase tracking-wider hover:gap-3 transition-all"
-                >
-                  Learn More
-                  <span>→</span>
-                </a>
+                {program.link ? (
+                  <Link
+                    to={program.link}
+                    className="inline-flex items-center gap-2 mt-4 text-primary font-display text-sm uppercase tracking-wider hover:gap-3 transition-all"
+                  >
+                    Learn More
+                    <span>→</span>
+                  </Link>
+                ) : (
+                  <a
+                    href="#contact"
+                    className="inline-flex items-center gap-2 mt-4 text-primary font-display text-sm uppercase tracking-wider hover:gap-3 transition-all"
+                  >
+                    Learn More
+                    <span>→</span>
+                  </a>
+                )}
               </div>
             </motion.div>
           ))}
