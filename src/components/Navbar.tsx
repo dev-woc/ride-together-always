@@ -10,7 +10,6 @@ const navLinks = [
   { name: 'About', href: '#about' },
   { name: 'Programs', href: '#programs' },
   { name: 'Events', href: '#events' },
-  { name: 'Resources', href: '#resources' },
   { name: 'Contact', href: '#contact' },
 ];
 
@@ -58,6 +57,12 @@ export const Navbar = () => {
               className="font-display text-sm uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
             >
               Our Community
+            </Link>
+            <Link
+              to="/resources"
+              className="font-display text-sm uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Mental Health Resources
             </Link>
           </div>
 
@@ -110,6 +115,13 @@ export const Navbar = () => {
                 className="font-display text-lg uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors py-2"
               >
                 Our Community
+              </Link>
+              <Link
+                to="/resources"
+                onClick={() => setIsOpen(false)}
+                className="font-display text-lg uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors py-2"
+              >
+                Mental Health Resources
               </Link>
               <div className="flex items-center gap-4 pt-4 border-t border-border">
                 <a href="https://www.facebook.com/people/Keep-Pedaling-Foundation/61565706314697/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
