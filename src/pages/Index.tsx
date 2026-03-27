@@ -5,6 +5,7 @@ import { Programs } from '@/components/Programs';
 import { Events } from '@/components/Events';
 import { Donate } from '@/components/Donate';
 import { Footer } from '@/components/Footer';
+import { Sponsors } from '@/components/Sponsors';
 import { StayConnected } from '@/components/StayConnected';
 
 const Index = () => {
@@ -16,6 +17,7 @@ const Index = () => {
 <Programs />
       <Events />
 <Donate />
+      <Sponsors />
       <StayConnected />
       <Footer />
     </div>
