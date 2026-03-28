@@ -29,6 +29,8 @@ export default async function handler(req: Request): Promise<Response> {
     waiver_agreed: boolean;
     yoga_signup: boolean;
     lime_bike: boolean;
+    driver_license_data?: string;
+    bike_rental_waiver_agreed?: boolean;
   };
 
   try {
@@ -40,7 +42,7 @@ export default async function handler(req: Request): Promise<Response> {
     });
   }
 
-  const { email, full_name, phone_number, instagram_handle, ride_group, waiver_agreed, yoga_signup, lime_bike } = body;
+  const { email, full_name, phone_number, instagram_handle, ride_group, waiver_agreed, yoga_signup, lime_bike, driver_license_data, bike_rental_waiver_agreed } = body;
 
   if (!email || !full_name || !phone_number || !ride_group || !waiver_agreed) {
     return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -52,8 +54,8 @@ export default async function handler(req: Request): Promise<Response> {
   try {
     const sql = neon(process.env.DATABASE_URL!);
     await sql`
-      INSERT INTO ride_signups (email, full_name, phone_number, instagram_handle, ride_group, waiver_agreed, yoga_signup, lime_bike)
-      VALUES (${email}, ${full_name}, ${phone_number}, ${instagram_handle ?? null}, ${ride_group}, ${waiver_agreed}, ${yoga_signup}, ${lime_bike})
+      INSERT INTO ride_signups (email, full_name, phone_number, instagram_handle, ride_group, waiver_agreed, yoga_signup, lime_bike, driver_license_data, bike_rental_waiver_agreed)
+      VALUES (${email}, ${full_name}, ${phone_number}, ${instagram_handle ?? null}, ${ride_group}, ${waiver_agreed}, ${yoga_signup}, ${lime_bike}, ${driver_license_data ?? null}, ${bike_rental_waiver_agreed ?? false})
     `;
 
     return new Response(JSON.stringify({ success: true }), {
