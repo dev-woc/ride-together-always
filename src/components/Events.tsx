@@ -22,7 +22,7 @@ const events = [
     location: 'Lake Eola Park, Orlando',
     description: 'Weekly community ride open to all skill levels. Join us for coffee after!',
     featured: false,
-    signupLink: null,
+    signupLink: '/ride-signup',
   },
   {
     title: 'The Impact Ride',
