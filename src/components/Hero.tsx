@@ -12,7 +12,7 @@ export const Hero = () => {
           muted
           loop
           playsInline
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-top"
           poster={heroImage}
         >
           <source src="/hero-video.mp4" type="video/mp4" />
