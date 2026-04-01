@@ -19,9 +19,7 @@ export const About = () => {
           >
             <div className="relative overflow-hidden rounded-sm">
               <video
-                autoPlay
-                muted
-                loop
+                controls
                 playsInline
                 className="w-full h-auto aspect-[4/3] object-cover"
               >
