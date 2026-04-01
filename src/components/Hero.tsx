@@ -2,8 +2,6 @@ import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import heroImage from '@/assets/hero-cycling.jpg';
 
-const SAMPLE_VIDEO_URL = 'https://www.w3schools.com/html/mov_bbb.mp4';
-
 export const Hero = () => {
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
@@ -17,7 +15,7 @@ export const Hero = () => {
           className="w-full h-full object-cover"
           poster={heroImage}
         >
-          <source src={SAMPLE_VIDEO_URL} type="video/mp4" />
+          <source src="/hero-video.mov" type="video/quicktime" />
         </video>
         <div className="absolute inset-0 bg-hero-gradient" />
       </div>
