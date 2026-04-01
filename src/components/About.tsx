@@ -21,11 +21,10 @@ export const About = () => {
               <video
                 controls
                 playsInline
-                className="w-full h-auto aspect-[4/3] object-cover"
+                className="relative z-10 w-full h-auto aspect-[4/3] object-cover"
               >
                 <source src="/intro-promo.mp4" type="video/mp4" />
               </video>
-              <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
             </div>
             {/* Accent element */}
             <div className="absolute -bottom-4 -right-4 w-32 h-32 border-4 border-primary rounded-sm -z-10" />
