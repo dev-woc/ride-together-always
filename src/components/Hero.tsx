@@ -4,7 +4,7 @@ import heroImage from '@/assets/hero-cycling.jpg';
 
 export const Hero = () => {
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden">
+    <section id="home" className="relative w-full min-h-screen md:min-h-0 md:aspect-video flex items-center justify-center overflow-hidden">
       {/* Background Video */}
       <div className="absolute inset-0">
         <video
@@ -12,7 +12,7 @@ export const Hero = () => {
           muted
           loop
           playsInline
-          className="w-full h-full object-contain"
+          className="w-full h-full object-cover"
           poster={heroImage}
         >
           <source src="/hero-video.mp4" type="video/mp4" />
