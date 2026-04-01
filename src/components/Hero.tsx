@@ -4,24 +4,23 @@ import heroImage from '@/assets/hero-cycling.jpg';
 
 export const Hero = () => {
   return (
-    <section id="home" className="relative w-full min-h-screen md:min-h-0 md:aspect-video flex items-center justify-center overflow-hidden">
+    <section id="home" className="relative w-full">
       {/* Background Video */}
-      <div className="absolute inset-0">
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="w-full h-full object-cover object-top"
-          poster={heroImage}
-        >
-          <source src="/hero-video.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-hero-gradient" />
-      </div>
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        className="w-full block"
+        poster={heroImage}
+      >
+        <source src="/hero-video.mp4" type="video/mp4" />
+      </video>
+      <div className="absolute inset-0 bg-hero-gradient" />
 
       {/* Content */}
-      <div className="relative z-10 container mx-auto px-6 py-32 text-center">
+      <div className="absolute inset-0 z-10 flex items-center justify-center">
+      <div className="container mx-auto px-6 py-32 text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -95,6 +94,7 @@ export const Hero = () => {
             <ChevronDown size={32} />
           </motion.div>
         </motion.div>
+      </div>
       </div>
     </section>
   );
