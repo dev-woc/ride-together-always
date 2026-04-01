@@ -15,7 +15,7 @@ export const Hero = () => {
           className="w-full h-full object-cover"
           poster={heroImage}
         >
-          <source src="/hero-video.mov" type="video/quicktime" />
+          <source src="/hero-video.mp4" type="video/mp4" />
         </video>
         <div className="absolute inset-0 bg-hero-gradient" />
       </div>
