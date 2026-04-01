@@ -1,7 +1,6 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
-import communityImage from '@/assets/community-cycling.jpg';
 
 export const About = () => {
   const ref = useRef(null);
@@ -19,11 +18,15 @@ export const About = () => {
             className="relative"
           >
             <div className="relative overflow-hidden rounded-sm">
-              <img
-                src={communityImage}
-                alt="Keep Pedaling Foundation community cycling group"
-                className="w-full h-auto object-cover aspect-[4/3]"
-              />
+              <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="w-full h-auto aspect-[4/3] object-cover"
+              >
+                <source src="/intro-promo.mp4" type="video/mp4" />
+              </video>
               <div className="absolute inset-0 bg-gradient-to-t from-background/50 to-transparent" />
             </div>
             {/* Accent element */}
