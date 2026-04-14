@@ -286,11 +286,18 @@ export default function CosApply() {
               />
             </Section>
 
-            {/* Introduction Video (optional) */}
-            <Section title="Introduction Video (Optional)">
-              <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                Record a short video introducing yourself and explaining your therapy goals. This is optional but helps us learn more about you.
+            {/* Introduction Video */}
+            <Section title="Introduction Video">
+              <p className="text-muted-foreground text-sm leading-relaxed mb-3">
+                Record a short video introducing yourself. Start off with your name and how you would like to be a new participant in the Cycle of Support, then respond to the following questions:
               </p>
+              <ol className="text-muted-foreground text-sm leading-relaxed space-y-1.5 list-decimal list-inside mb-4">
+                <li>How have you been feeling lately, mentally and emotionally?</li>
+                <li>What are some challenges you're currently facing in your life? (don't have to be too detailed)</li>
+                <li>Have you ever tried therapy before? If not, what has stopped you?</li>
+                <li>What made you apply for the Cycle of Support program?</li>
+                <li>Why do you feel this opportunity is important for you?</li>
+              </ol>
 
               {videoUrl ? (
                 <div className="flex items-center gap-3 bg-background border border-border rounded-sm px-4 py-3">
