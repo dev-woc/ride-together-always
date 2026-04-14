@@ -385,7 +385,20 @@ export default function Admin() {
                     <div className="grid gap-5 md:grid-cols-2">
                       <div className="space-y-2">
                         <Label htmlFor="title">Title</Label>
-                        <Input required id="title" value={eventForm.title} onChange={(event) => setEventForm((current) => ({ ...current, title: event.target.value }))} />
+                        <Input
+                          required
+                          id="title"
+                          value={eventForm.title}
+                          onChange={(e) => {
+                            const title = e.target.value;
+                            const autoLink = title.trim() ? `/ride-signup?event=${encodeURIComponent(title.trim())}` : "";
+                            setEventForm((current) => ({
+                              ...current,
+                              title,
+                              signup_link: current.signup_link === "" || current.signup_link === `/ride-signup?event=${encodeURIComponent(current.title.trim())}` ? autoLink : current.signup_link,
+                            }));
+                          }}
+                        />
                       </div>
                       <div className="space-y-2">
                         <Label htmlFor="sort_order">Sort Order</Label>
