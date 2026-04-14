@@ -31,6 +31,7 @@ export default async function handler(req: Request): Promise<Response> {
     lime_bike: boolean;
     driver_license_data?: string;
     bike_rental_waiver_agreed?: boolean;
+    event_name?: string;
   };
 
   try {
@@ -42,7 +43,7 @@ export default async function handler(req: Request): Promise<Response> {
     });
   }
 
-  const { email, full_name, phone_number, instagram_handle, ride_group, waiver_agreed, yoga_signup, lime_bike, driver_license_data, bike_rental_waiver_agreed } = body;
+  const { email, full_name, phone_number, instagram_handle, ride_group, waiver_agreed, yoga_signup, lime_bike, driver_license_data, bike_rental_waiver_agreed, event_name } = body;
 
   if (!email || !full_name || !phone_number || !ride_group || !waiver_agreed) {
     return new Response(JSON.stringify({ error: 'Missing required fields' }), {
@@ -53,9 +54,11 @@ export default async function handler(req: Request): Promise<Response> {
 
   try {
     const sql = neon(process.env.DATABASE_URL!);
+    // ensure event_name column exists
+    await sql`ALTER TABLE ride_signups ADD COLUMN IF NOT EXISTS event_name TEXT NOT NULL DEFAULT 'Bike N Thrive'`;
     await sql`
-      INSERT INTO ride_signups (email, full_name, phone_number, instagram_handle, ride_group, waiver_agreed, yoga_signup, lime_bike, driver_license_data, bike_rental_waiver_agreed)
-      VALUES (${email}, ${full_name}, ${phone_number}, ${instagram_handle ?? null}, ${ride_group}, ${waiver_agreed}, ${yoga_signup}, ${lime_bike}, ${driver_license_data ?? null}, ${bike_rental_waiver_agreed ?? false})
+      INSERT INTO ride_signups (email, full_name, phone_number, instagram_handle, ride_group, waiver_agreed, yoga_signup, lime_bike, driver_license_data, bike_rental_waiver_agreed, event_name)
+      VALUES (${email}, ${full_name}, ${phone_number}, ${instagram_handle ?? null}, ${ride_group}, ${waiver_agreed}, ${yoga_signup}, ${lime_bike}, ${driver_license_data ?? null}, ${bike_rental_waiver_agreed ?? false}, ${event_name ?? 'Bike N Thrive'})
     `;
 
     return new Response(JSON.stringify({ success: true }), {

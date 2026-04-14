@@ -28,6 +28,7 @@ export default function CosAdmin() {
 
   // Ride signups state
   const [signups, setSignups] = useState<any[]>([]);
+  const [signupsGrouped, setSignupsGrouped] = useState<Record<string, any[]>>({});
   const [signupsLoading, setSignupsLoading] = useState(false);
   const [selectedSignup, setSelectedSignup] = useState<any>(null);
 
@@ -45,6 +46,7 @@ export default function CosAdmin() {
     const res = await fetch('/api/admin/ride-signups', { headers: { Authorization: `Bearer ${token}` } });
     const data = await res.json();
     setSignups(data.signups ?? []);
+    setSignupsGrouped(data.grouped ?? {});
     setSignupsLoading(false);
   };
 
@@ -230,7 +232,7 @@ export default function CosAdmin() {
           {/* ── Ride Sign-Ups Tab ── */}
           {tab === 'ride-signups' && (
             <div className="flex gap-6">
-              <div className="flex-1 space-y-3 min-w-0">
+              <div className="flex-1 space-y-6 min-w-0">
                 {signupsLoading ? (
                   <div className="flex items-center justify-center py-20">
                     <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
@@ -240,25 +242,35 @@ export default function CosAdmin() {
                     <p className="text-muted-foreground">No ride sign-ups yet</p>
                   </div>
                 ) : (
-                  signups.map(signup => (
-                    <button
-                      key={signup.id}
-                      onClick={() => setSelectedSignup(signup)}
-                      className={`w-full text-left bg-card border rounded-sm p-4 hover:border-primary transition-colors ${selectedSignup?.id === signup.id ? 'border-primary' : 'border-border'}`}
-                    >
-                      <div className="flex items-center justify-between gap-4">
-                        <div className="min-w-0">
-                          <div className="font-display text-sm font-bold uppercase text-foreground truncate">{signup.full_name}</div>
-                          <div className="text-xs text-muted-foreground">{signup.email}</div>
-                          <div className="text-xs text-muted-foreground capitalize">{signup.ride_group} group</div>
-                        </div>
-                        <div className="flex flex-col items-end gap-1 shrink-0 text-xs text-muted-foreground">
-                          {signup.yoga_signup && <span className="text-primary">Yoga</span>}
-                          {signup.lime_bike && <span className="text-primary">Lime Bike</span>}
-                          <span>{new Date(signup.created_at).toLocaleDateString()}</span>
-                        </div>
+                  Object.entries(signupsGrouped).map(([eventName, eventSignups]) => (
+                    <div key={eventName}>
+                      <div className="flex items-center gap-3 mb-3">
+                        <h2 className="font-display text-sm uppercase tracking-[0.2em] text-primary">{eventName}</h2>
+                        <span className="text-xs text-muted-foreground border border-border rounded-sm px-2 py-0.5">{eventSignups.length} sign-up{eventSignups.length !== 1 ? 's' : ''}</span>
                       </div>
-                    </button>
+                      <div className="space-y-2">
+                        {eventSignups.map(signup => (
+                          <button
+                            key={signup.id}
+                            onClick={() => setSelectedSignup(signup)}
+                            className={`w-full text-left bg-card border rounded-sm p-4 hover:border-primary transition-colors ${selectedSignup?.id === signup.id ? 'border-primary' : 'border-border'}`}
+                          >
+                            <div className="flex items-center justify-between gap-4">
+                              <div className="min-w-0">
+                                <div className="font-display text-sm font-bold uppercase text-foreground truncate">{signup.full_name}</div>
+                                <div className="text-xs text-muted-foreground">{signup.email}</div>
+                                <div className="text-xs text-muted-foreground capitalize">{signup.ride_group} group</div>
+                              </div>
+                              <div className="flex flex-col items-end gap-1 shrink-0 text-xs text-muted-foreground">
+                                {signup.yoga_signup && <span className="text-primary">Yoga</span>}
+                                {signup.lime_bike && <span className="text-primary">Lime Bike</span>}
+                                <span>{new Date(signup.created_at).toLocaleDateString()}</span>
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
                   ))
                 )}
               </div>
