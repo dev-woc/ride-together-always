@@ -1,9 +1,13 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { CalendarIcon, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -332,21 +336,69 @@ export default function Admin() {
                 </div>
 
                 <div className="grid gap-5 md:grid-cols-2">
+                  {/* Date picker */}
                   <div className="space-y-2">
                     <Label htmlFor="date_label">Date Label</Label>
-                    <Input
-                      id="date_label"
-                      value={form.date_label}
-                      onChange={(event) => setForm((current) => ({ ...current, date_label: event.target.value }))}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        id="date_label"
+                        value={form.date_label}
+                        onChange={(event) => setForm((current) => ({ ...current, date_label: event.target.value }))}
+                        placeholder="e.g. Every Saturday"
+                        className="flex-1"
+                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button type="button" variant="outline" size="icon" className="shrink-0">
+                            <CalendarIcon size={16} />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="end">
+                          <Calendar
+                            mode="single"
+                            onSelect={(date) => {
+                              if (date) setForm((current) => ({ ...current, date_label: format(date, "EEEE, MMMM d") }));
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                   </div>
+
+                  {/* Time picker */}
                   <div className="space-y-2">
                     <Label htmlFor="time_label">Time Label</Label>
-                    <Input
-                      id="time_label"
-                      value={form.time_label}
-                      onChange={(event) => setForm((current) => ({ ...current, time_label: event.target.value }))}
-                    />
+                    <div className="flex gap-2">
+                      <Input
+                        id="time_label"
+                        value={form.time_label}
+                        onChange={(event) => setForm((current) => ({ ...current, time_label: event.target.value }))}
+                        placeholder="e.g. 8:00 AM"
+                        className="flex-1"
+                      />
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button type="button" variant="outline" size="icon" className="shrink-0">
+                            <Clock size={16} />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-48 p-3" align="end">
+                          <p className="text-xs text-muted-foreground mb-2 font-display uppercase tracking-wider">Pick a time</p>
+                          <input
+                            type="time"
+                            className="w-full bg-background border border-border rounded-sm px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                            onChange={(e) => {
+                              const [h, m] = e.target.value.split(":");
+                              if (!h || !m) return;
+                              const hour = parseInt(h, 10);
+                              const ampm = hour >= 12 ? "PM" : "AM";
+                              const h12 = hour % 12 === 0 ? 12 : hour % 12;
+                              setForm((current) => ({ ...current, time_label: `${h12}:${m} ${ampm}` }));
+                            }}
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    </div>
                   </div>
                 </div>
 
