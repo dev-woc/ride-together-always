@@ -321,8 +321,8 @@ export default function Admin() {
               <form className="grid gap-5" onSubmit={handleSubmit}>
                 <div className="grid gap-5 md:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="title">Title</Label>
-                    <Input id="title" value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} />
+                    <Label htmlFor="title">Title <span className="text-destructive">*</span></Label>
+                    <Input required id="title" value={form.title} onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))} />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="sort_order">Sort Order</Label>
@@ -338,9 +338,10 @@ export default function Admin() {
                 <div className="grid gap-5 md:grid-cols-2">
                   {/* Date picker */}
                   <div className="space-y-2">
-                    <Label htmlFor="date_label">Date Label</Label>
+                    <Label htmlFor="date_label">Date Label <span className="text-destructive">*</span></Label>
                     <div className="flex gap-2">
                       <Input
+                        required
                         id="date_label"
                         value={form.date_label}
                         onChange={(event) => setForm((current) => ({ ...current, date_label: event.target.value }))}
@@ -367,9 +368,10 @@ export default function Admin() {
 
                   {/* Time picker */}
                   <div className="space-y-2">
-                    <Label htmlFor="time_label">Time Label</Label>
+                    <Label htmlFor="time_label">Time Label <span className="text-destructive">*</span></Label>
                     <div className="flex gap-2">
                       <Input
+                        required
                         id="time_label"
                         value={form.time_label}
                         onChange={(event) => setForm((current) => ({ ...current, time_label: event.target.value }))}
@@ -403,8 +405,9 @@ export default function Admin() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="location">Location</Label>
+                  <Label htmlFor="location">Location <span className="text-destructive">*</span></Label>
                   <Input
+                    required
                     id="location"
                     value={form.location}
                     onChange={(event) => setForm((current) => ({ ...current, location: event.target.value }))}
@@ -422,8 +425,9 @@ export default function Admin() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
+                  <Label htmlFor="description">Description <span className="text-destructive">*</span></Label>
                   <Textarea
+                    required
                     id="description"
                     rows={5}
                     value={form.description}
