@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import { useUploadThing } from '@/lib/uploadthing';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, ChevronRight, ChevronLeft, Bike, Upload, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -101,8 +102,15 @@ export default function RideSignup() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [licenseFile, setLicenseFile] = useState<File | null>(null);
+  const [licenseUrl, setLicenseUrl] = useState<string | null>(null);
   const [licenseError, setLicenseError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const { startUpload, isUploading } = useUploadThing('driverLicense', {
+    onClientUploadComplete: (res) => {
+      if (res?.[0]?.url) setLicenseUrl(res[0].url);
+    },
+  });
 
   const {
     register,
@@ -149,7 +157,7 @@ export default function RideSignup() {
     // Validate bike rental step manually
     if (limeBike && step === 2) {
       let ok = true;
-      if (!licenseFile) {
+      if (!licenseFile && !licenseUrl) {
         setLicenseError('Please upload a photo of your driver\'s license');
         ok = false;
       }
@@ -159,6 +167,14 @@ export default function RideSignup() {
       }
       if (!ok) return;
       setLicenseError('');
+      // upload license before moving to next step
+      if (licenseFile && !licenseUrl) {
+        const uploaded = await startUpload([licenseFile]);
+        if (!uploaded?.[0]?.url) {
+          setLicenseError('Upload failed, please try again');
+          return;
+        }
+      }
     }
 
     if (valid) setStep((s) => s + 1);
@@ -178,15 +194,10 @@ export default function RideSignup() {
   const onSubmit = async (data: FormData) => {
     setSubmitting(true);
     try {
-      let licenseData: string | null = null;
-      if (licenseFile) {
-        licenseData = await fileToBase64(licenseFile);
-      }
-
       const res = await fetch('/api/ride-signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, driver_license_data: licenseData, event_name: eventName }),
+        body: JSON.stringify({ ...data, driver_license_data: licenseUrl, event_name: eventName }),
       });
       if (!res.ok) throw new Error('Submission failed');
       setSubmitted(true);
@@ -544,9 +555,9 @@ export default function RideSignup() {
                 ) : <div />}
 
                 {step < totalSteps - 1 ? (
-                  <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 text-primary-foreground font-display font-bold">
-                    Next
-                    <ChevronRight className="w-4 h-4 ml-1" />
+                  <Button type="button" onClick={handleNext} disabled={isUploading} className="bg-primary hover:bg-primary/90 text-primary-foreground font-display font-bold">
+                    {isUploading ? 'Uploading...' : 'Next'}
+                    {!isUploading && <ChevronRight className="w-4 h-4 ml-1" />}
                   </Button>
                 ) : (
                   <Button type="submit" disabled={submitting} className="bg-primary hover:bg-primary/90 text-primary-foreground font-display font-bold">
