@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createRouteHandler } from 'uploadthing/server';
-import { ourFileRouter } from '../src/lib/uploadthing';
+import { ourFileRouter } from '../src/lib/uploadthing-router';
 
 const { GET, POST } = createRouteHandler({
   router: ourFileRouter,
