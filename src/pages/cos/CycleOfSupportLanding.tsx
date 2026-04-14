@@ -47,12 +47,20 @@ export default function CycleOfSupportLanding() {
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {user ? (
-              <Link
-                to="/cycle-of-support/apply"
-                className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-display text-sm uppercase tracking-wider px-8 py-4 hover:bg-primary/90 transition-colors"
-              >
-                Apply Now →
-              </Link>
+              <>
+                <Link
+                  to="/cycle-of-support/apply"
+                  className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground font-display text-sm uppercase tracking-wider px-8 py-4 hover:bg-primary/90 transition-colors"
+                >
+                  Apply Now →
+                </Link>
+                <Link
+                  to="/cycle-of-support/dashboard"
+                  className="inline-flex items-center justify-center gap-2 border border-border text-foreground font-display text-sm uppercase tracking-wider px-8 py-4 hover:bg-muted transition-colors"
+                >
+                  Dashboard
+                </Link>
+              </>
             ) : (
               <>
                 <Link
