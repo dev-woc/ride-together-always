@@ -149,6 +149,17 @@ export default function CosAdmin() {
                   <p className="text-xs text-foreground leading-relaxed">{selected.therapy_motivation}</p>
                 </div>
 
+                {selected.intro_video_url && (
+                  <div className="border-t border-border pt-4">
+                    <div className="font-display text-xs uppercase tracking-wider text-muted-foreground mb-2">Intro Video</div>
+                    <video
+                      src={selected.intro_video_url}
+                      controls
+                      className="w-full rounded-sm border border-border"
+                    />
+                  </div>
+                )}
+
                 {/* Status Update */}
                 <div className="border-t border-border pt-4">
                   <label className="block font-display text-xs uppercase tracking-wider text-foreground mb-2">Update Status</label>
