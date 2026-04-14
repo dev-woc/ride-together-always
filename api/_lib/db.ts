@@ -9,6 +9,7 @@ if (!databaseUrl) {
 export const sql = neon(databaseUrl);
 
 let eventsTableReady: Promise<void> | null = null;
+let siteContentTableReady: Promise<void> | null = null;
 
 export function ensureEventsTable() {
   if (!eventsTableReady) {
@@ -30,4 +31,18 @@ export function ensureEventsTable() {
   }
 
   return eventsTableReady;
+}
+
+export function ensureSiteContentTable() {
+  if (!siteContentTableReady) {
+    siteContentTableReady = sql`
+      CREATE TABLE IF NOT EXISTS site_content (
+        key TEXT PRIMARY KEY,
+        value_json JSONB NOT NULL,
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `.then(() => undefined);
+  }
+
+  return siteContentTableReady;
 }
