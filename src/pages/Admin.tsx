@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { format } from "date-fns";
+import { CalendarIcon, Clock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -391,12 +395,67 @@ export default function Admin() {
 
                     <div className="grid gap-5 md:grid-cols-2">
                       <div className="space-y-2">
-                        <Label htmlFor="date_label">Date Label</Label>
-                        <Input required id="date_label" value={eventForm.date_label} onChange={(event) => setEventForm((current) => ({ ...current, date_label: event.target.value }))} />
+                        <Label htmlFor="date_label">Date Label <span className="text-destructive">*</span></Label>
+                        <div className="flex gap-2">
+                          <Input
+                            required
+                            id="date_label"
+                            value={eventForm.date_label}
+                            onChange={(e) => setEventForm((current) => ({ ...current, date_label: e.target.value }))}
+                            placeholder="e.g. Every Saturday"
+                            className="flex-1"
+                          />
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button type="button" variant="outline" size="icon" className="shrink-0">
+                                <CalendarIcon size={16} />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0" align="end">
+                              <Calendar
+                                mode="single"
+                                onSelect={(date) => {
+                                  if (date) setEventForm((current) => ({ ...current, date_label: format(date, "EEEE, MMMM d") }));
+                                }}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="time_label">Time Label</Label>
-                        <Input required id="time_label" value={eventForm.time_label} onChange={(event) => setEventForm((current) => ({ ...current, time_label: event.target.value }))} />
+                        <Label htmlFor="time_label">Time Label <span className="text-destructive">*</span></Label>
+                        <div className="flex gap-2">
+                          <Input
+                            required
+                            id="time_label"
+                            value={eventForm.time_label}
+                            onChange={(e) => setEventForm((current) => ({ ...current, time_label: e.target.value }))}
+                            placeholder="e.g. 8:00 AM"
+                            className="flex-1"
+                          />
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button type="button" variant="outline" size="icon" className="shrink-0">
+                                <Clock size={16} />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-48 p-3" align="end">
+                              <p className="text-xs text-muted-foreground mb-2 font-display uppercase tracking-wider">Pick a time</p>
+                              <input
+                                type="time"
+                                className="w-full bg-background border border-border rounded-sm px-2 py-1.5 text-sm text-foreground focus:outline-none focus:border-primary"
+                                onChange={(e) => {
+                                  const [h, m] = e.target.value.split(":");
+                                  if (!h || !m) return;
+                                  const hour = parseInt(h, 10);
+                                  const ampm = hour >= 12 ? "PM" : "AM";
+                                  const h12 = hour % 12 === 0 ? 12 : hour % 12;
+                                  setEventForm((current) => ({ ...current, time_label: `${h12}:${m} ${ampm}` }));
+                                }}
+                              />
+                            </PopoverContent>
+                          </Popover>
+                        </div>
                       </div>
                     </div>
 
