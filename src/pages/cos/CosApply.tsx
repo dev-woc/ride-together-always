@@ -231,7 +231,7 @@ export default function CosApply() {
                 {errors.current_challenges && <p className="text-destructive text-xs mt-1">{errors.current_challenges.message}</p>}
               </div>
               <RadioField
-                label="Are you willing to create a video before the program begins and after it ends to document your journey?"
+                label="Are you willing to create a video before the program begins and after it ends to see how the therapy has affected you? (video does not have to include personal details such as discussions that occurred during your sessions.)"
                 name="video_documentation"
                 register={register}
                 error={errors.video_documentation?.message}
