@@ -39,7 +39,10 @@ export default function CycleOfSupportLanding() {
             CYCLE OF <span className="text-outline">SUPPORT</span>
           </h1>
           <p className="text-muted-foreground text-lg md:text-xl mb-4 leading-relaxed">
-            The Keep Pedaling Foundation offers <strong className="text-foreground">free therapy for one month</strong> to three selected individuals who are ready to begin their healing journey.
+            The Cycle of Support program is an initiative by the Keep Pedaling Foundation designed to provide access to mental health support for individuals who may not otherwise have the resources.
+          </p>
+          <p className="text-muted-foreground text-lg md:text-xl mb-4 leading-relaxed">
+            Selected participants will receive <strong className="text-foreground">6 weeks of sponsored therapy</strong>, connecting them with professional mental health counselors committed to supporting your mental and emotional well-being. This program is built on the belief that everyone deserves access to care, community, and the opportunity to grow.
           </p>
           <p className="text-sm text-primary font-display uppercase tracking-wider mb-10">
             Applications reviewed on a rolling basis
