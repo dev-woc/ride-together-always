@@ -297,6 +297,7 @@ export default function CosApply() {
                 <li>Have you ever tried therapy before? If not, what has stopped you?</li>
                 <li>What made you apply for the Cycle of Support program?</li>
                 <li>Why do you feel this opportunity is important for you?</li>
+                <li>Anything additional you would like to add?</li>
               </ol>
 
               {videoUrl ? (
