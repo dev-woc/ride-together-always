@@ -1,43 +1,31 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Calendar, MapPin, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-
-const events = [
-  {
-    title: 'Bike N Thrive',
-    date: 'Saturday, March 28',
-    time: '8:00 AM',
-    location: 'RTW Photography Studio, 520 N Parramore Ave, Orlando',
-    description: 'A special community ride and wellness experience — group cycling, fresh juices, yoga, coffee, and free Lime bikes. Open to all levels!',
-    featured: true,
-    signupLink: '/ride-signup',
-  },
-  {
-    title: 'Saturday Morning Ride',
-    date: 'Every Saturday',
-    time: '7:00 AM',
-    location: 'Lake Eola Park, Orlando',
-    description: 'Weekly community ride open to all skill levels. Join us for coffee after!',
-    featured: false,
-    signupLink: '/ride-signup',
-  },
-  {
-    title: 'The Impact Ride',
-    date: 'Coming Spring 2026',
-    time: 'TBA',
-    location: 'Orlando Metro Area',
-    description: 'Annual charity ride raising awareness and funds for mental health resources.',
-    featured: false,
-    signupLink: null,
-  },
-];
+import { defaultEvents } from '@/lib/default-events';
+import type { SiteEvent } from '@/types/events';
 
 export const Events = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const eventsQuery = useQuery({
+    queryKey: ['site-events'],
+    queryFn: async () => {
+      const response = await fetch('/api/events');
+
+      if (!response.ok) {
+        throw new Error('Failed to load events');
+      }
+
+      const data = (await response.json()) as { events: SiteEvent[] };
+      return data.events;
+    },
+    staleTime: 1000 * 60,
+  });
+  const events = eventsQuery.isError || !eventsQuery.data ? defaultEvents : eventsQuery.data;
 
   return (
     <section id="events" className="section-padding bg-background" ref={ref}>
@@ -66,7 +54,7 @@ export const Events = () => {
         <div className="space-y-6">
           {events.map((event, index) => (
             <motion.div
-              key={event.title}
+              key={event.id}
               initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
               animate={isInView ? { opacity: 1, x: 0 } : {}}
               transition={{ duration: 0.6, delay: index * 0.1 }}
@@ -92,11 +80,11 @@ export const Events = () => {
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-2">
                       <Calendar size={16} className="text-primary" />
-                      {event.date}
+                      {event.date_label}
                     </span>
                     <span className="flex items-center gap-2">
                       <Clock size={16} className="text-primary" />
-                      {event.time}
+                      {event.time_label}
                     </span>
                     <span className="flex items-center gap-2">
                       <MapPin size={16} className="text-primary" />
@@ -104,8 +92,8 @@ export const Events = () => {
                     </span>
                   </div>
                 </div>
-                {event.signupLink ? (
-                  <Link to={event.signupLink}>
+                {event.signup_link ? (
+                  <Link to={event.signup_link}>
                     <Button
                       variant="default"
                       className="font-display uppercase tracking-wider"
@@ -118,7 +106,7 @@ export const Events = () => {
                     variant={event.featured ? "default" : "outline"}
                     className="font-display uppercase tracking-wider"
                   >
-                    {event.time === 'TBA' ? 'Get Notified' : 'RSVP Now'}
+                    {event.time_label === 'TBA' ? 'Get Notified' : 'RSVP Now'}
                   </Button>
                 )}
               </div>

@@ -18,6 +18,7 @@ const programs = [
     title: 'Cycle of Support',
     description: 'Our signature program connecting cyclists with mental health professionals for transformative healing journeys.',
     image: null,
+    link: '/cycle-of-support',
   },
   {
     icon: Brain,
