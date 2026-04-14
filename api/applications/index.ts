@@ -32,28 +32,31 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const {
-      full_name, email, phone, date_of_birth, city_state,
+      full_name, email, phone, gender, date_of_birth, city_state,
       prior_therapy, has_insurance, current_challenges,
+      video_documentation, testimonial_willing,
       mental_health_description, therapy_motivation, therapy_goals, therapy_barriers,
-      weekly_commitment, has_device, testimonial_willing,
+      weekly_commitment, has_device,
       therapist_preference, preferred_therapist_name, preferred_therapist_contact,
       intro_video_url,
     } = req.body;
 
     const [app] = await sql`
       INSERT INTO cos_applications (
-        user_id, full_name, email, phone, date_of_birth, city_state,
+        user_id, full_name, email, phone, gender, date_of_birth, city_state,
         prior_therapy, has_insurance, current_challenges,
+        video_documentation, testimonial_willing,
         mental_health_description, therapy_motivation, therapy_goals, therapy_barriers,
-        weekly_commitment, has_device, testimonial_willing,
+        weekly_commitment, has_device,
         therapist_preference, preferred_therapist_name, preferred_therapist_contact,
         intro_video_url
       ) VALUES (
-        ${user.id}, ${full_name}, ${email}, ${phone}, ${date_of_birth}, ${city_state},
+        ${user.id}, ${full_name}, ${email}, ${phone}, ${gender ?? null}, ${date_of_birth}, ${city_state},
         ${prior_therapy}, ${has_insurance}, ${current_challenges},
+        ${video_documentation ?? null}, ${testimonial_willing ?? null},
         ${mental_health_description}, ${therapy_motivation}, ${therapy_goals}, ${therapy_barriers},
-        ${weekly_commitment}, ${has_device}, ${testimonial_willing},
-        ${therapist_preference}, ${preferred_therapist_name ?? null}, ${preferred_therapist_contact ?? null},
+        ${weekly_commitment}, ${has_device},
+        ${therapist_preference ?? null}, ${preferred_therapist_name ?? null}, ${preferred_therapist_contact ?? null},
         ${intro_video_url ?? null}
       ) RETURNING *
     `;

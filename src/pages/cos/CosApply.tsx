@@ -9,27 +9,34 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { CheckCircle, UploadCloud, X } from 'lucide-react';
 
-const CHALLENGES = ['Anxiety', 'Depression', 'Relationship Issues', 'Grief & Loss', 'Career Stress', 'Trauma', 'Other'];
+const CHALLENGES = [
+  'Anxiety or Stress',
+  'Depression or Sadness',
+  'Relationship Challenges',
+  'Grief or Loss',
+  'Career or Educational Concerns',
+  'Domestic Violence',
+];
+
+const GENDERS = ['Male', 'Female', 'Non-binary', 'Prefer not to say'];
 
 const schema = z.object({
   full_name: z.string().min(2, 'Required'),
   email: z.string().email('Invalid email'),
   phone: z.string().min(7, 'Required'),
+  gender: z.string().min(1, 'Required'),
   date_of_birth: z.string().min(1, 'Required'),
   city_state: z.string().min(2, 'Required'),
   prior_therapy: z.enum(['true', 'false'], { required_error: 'Required' }),
   has_insurance: z.enum(['true', 'false'], { required_error: 'Required' }),
   current_challenges: z.array(z.string()).min(1, 'Select at least one'),
-  mental_health_description: z.string().min(20, 'Please provide more detail'),
-  therapy_motivation: z.string().min(20, 'Please provide more detail'),
-  therapy_goals: z.string().min(20, 'Please provide more detail'),
-  therapy_barriers: z.string().min(10, 'Please provide more detail'),
+  video_documentation: z.enum(['true', 'false'], { required_error: 'Required' }),
+  mental_health_description: z.string().min(10, 'Please provide a brief response'),
+  therapy_motivation: z.string().min(10, 'Please provide a brief response'),
+  therapy_goals: z.string().min(10, 'Please provide a brief response'),
   weekly_commitment: z.enum(['true', 'false'], { required_error: 'Required' }),
   has_device: z.enum(['true', 'false'], { required_error: 'Required' }),
-  testimonial_willing: z.enum(['true', 'false'], { required_error: 'Required' }),
-  therapist_preference: z.enum(['foundation', 'own'], { required_error: 'Required' }),
-  preferred_therapist_name: z.string().optional(),
-  preferred_therapist_contact: z.string().optional(),
+  therapy_barriers: z.string().min(5, 'Please provide a brief response'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -52,7 +59,7 @@ export default function CosApply() {
     },
   });
 
-  const { register, handleSubmit, control, watch, formState: { errors, isSubmitting } } = useForm<FormData>({
+  const { register, handleSubmit, control, formState: { errors, isSubmitting } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
       email: user?.email ?? '',
@@ -60,8 +67,6 @@ export default function CosApply() {
       current_challenges: [],
     },
   });
-
-  const therapistPref = watch('therapist_preference');
 
   useEffect(() => {
     fetch('/api/applications', { headers: { Authorization: `Bearer ${token}` } })
@@ -83,9 +88,12 @@ export default function CosApply() {
       ...data,
       prior_therapy: data.prior_therapy === 'true',
       has_insurance: data.has_insurance === 'true',
+      video_documentation: data.video_documentation === 'true',
       weekly_commitment: data.weekly_commitment === 'true',
       has_device: data.has_device === 'true',
-      testimonial_willing: data.testimonial_willing === 'true',
+      // kept for DB compatibility, not shown in form
+      testimonial_willing: data.video_documentation === 'true',
+      therapist_preference: null,
       intro_video_url: uploadedVideoUrl,
     };
 
@@ -135,7 +143,7 @@ export default function CosApply() {
             <h1 className="font-display text-4xl font-black uppercase text-foreground mt-4">
               APPLICATION
             </h1>
-            <p className="text-muted-foreground mt-2">All fields are required unless marked optional.</p>
+            <p className="text-muted-foreground mt-2">All fields are required.</p>
           </div>
 
           {serverError && (
@@ -145,10 +153,11 @@ export default function CosApply() {
           )}
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-10">
-            {/* Personal Info */}
+
+            {/* Personal Information */}
             <Section title="Personal Information">
               <Field label="Full Name" error={errors.full_name?.message}>
-                <input {...register('full_name')} className={inputCls(!!errors.full_name)} placeholder="Jordan Mason" />
+                <input {...register('full_name')} className={inputCls(!!errors.full_name)} />
               </Field>
               <Field label="Email" error={errors.email?.message}>
                 <input {...register('email')} type="email" className={inputCls(!!errors.email)} />
@@ -156,6 +165,18 @@ export default function CosApply() {
               <Field label="Phone Number" error={errors.phone?.message}>
                 <input {...register('phone')} type="tel" className={inputCls(!!errors.phone)} placeholder="(407) 555-0100" />
               </Field>
+              <div>
+                <label className="block font-display text-xs uppercase tracking-wider text-foreground mb-3">Gender</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {GENDERS.map(g => (
+                    <label key={g} className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
+                      <input type="radio" value={g} {...register('gender')} className="accent-primary" />
+                      {g}
+                    </label>
+                  ))}
+                </div>
+                {errors.gender && <p className="text-destructive text-xs mt-1">{errors.gender.message}</p>}
+              </div>
               <Field label="Date of Birth" error={errors.date_of_birth?.message}>
                 <input {...register('date_of_birth')} type="date" className={inputCls(!!errors.date_of_birth)} />
               </Field>
@@ -164,20 +185,30 @@ export default function CosApply() {
               </Field>
             </Section>
 
-            {/* Therapy Background */}
-            <Section title="Therapy Background">
-              <RadioField label="Have you previously received therapy or counseling?" name="prior_therapy" register={register} error={errors.prior_therapy?.message} />
-              <RadioField label="Do you currently have active health insurance?" name="has_insurance" register={register} error={errors.has_insurance?.message} />
-
+            {/* Background */}
+            <Section title="Background">
+              <RadioField
+                label="Have you ever participated in therapy or counseling sessions before?"
+                name="prior_therapy"
+                register={register}
+                error={errors.prior_therapy?.message}
+              />
+              <RadioField
+                label="Do you have active Health Insurance coverage?"
+                name="has_insurance"
+                register={register}
+                error={errors.has_insurance?.message}
+              />
               <div>
                 <label className="block font-display text-xs uppercase tracking-wider text-foreground mb-3">
-                  Current Challenges <span className="text-muted-foreground normal-case">(select all that apply)</span>
+                  What challenges are you currently experiencing that you feel therapy could help with?
+                  <span className="text-destructive ml-1">*</span>
                 </label>
                 <Controller
                   control={control}
                   name="current_challenges"
                   render={({ field }) => (
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="space-y-2">
                       {CHALLENGES.map(c => (
                         <label key={c} className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
                           <input
@@ -199,59 +230,66 @@ export default function CosApply() {
                 />
                 {errors.current_challenges && <p className="text-destructive text-xs mt-1">{errors.current_challenges.message}</p>}
               </div>
+              <RadioField
+                label="Are you willing to create a video before the program begins and after it ends to document your journey?"
+                name="video_documentation"
+                register={register}
+                error={errors.video_documentation?.message}
+              />
             </Section>
 
             {/* Mental Health & Goals */}
             <Section title="Mental Health & Goals">
-              <TextareaField label="Describe your current mental and emotional health" name="mental_health_description" register={register} error={errors.mental_health_description?.message} />
-              <TextareaField label="Why are you seeking therapy at this time?" name="therapy_motivation" register={register} error={errors.therapy_motivation?.message} />
-              <TextareaField label="What are your therapy goals?" name="therapy_goals" register={register} error={errors.therapy_goals?.message} />
-              <TextareaField label="What barriers have prevented you from accessing therapy?" name="therapy_barriers" register={register} error={errors.therapy_barriers?.message} />
+              <TextareaField
+                label="How would you describe your mental and emotional health over the past 6 months?"
+                helper="Brief response: 1–2 sentences"
+                name="mental_health_description"
+                register={register}
+                error={errors.mental_health_description?.message}
+              />
+              <TextareaField
+                label="Why are you interested in starting therapy now?"
+                helper="Brief response: 2–3 sentences"
+                name="therapy_motivation"
+                register={register}
+                error={errors.therapy_motivation?.message}
+              />
+              <TextareaField
+                label="What goals or changes would you hope to achieve through therapy?"
+                helper="Brief response: 2–3 sentences"
+                name="therapy_goals"
+                register={register}
+                error={errors.therapy_goals?.message}
+              />
             </Section>
 
-            {/* Logistics */}
-            <Section title="Logistics">
-              <RadioField label="Can you commit to weekly therapy sessions?" name="weekly_commitment" register={register} error={errors.weekly_commitment?.message} />
-              <RadioField label="Do you have a device for virtual sessions?" name="has_device" register={register} error={errors.has_device?.message} />
-              <RadioField label="Are you willing to share a testimonial if selected?" name="testimonial_willing" register={register} error={errors.testimonial_willing?.message} />
+            {/* Availability & Access */}
+            <Section title="Availability & Access">
+              <RadioField
+                label="Are you available to attend mandatory weekly therapy sessions if chosen?"
+                name="weekly_commitment"
+                register={register}
+                error={errors.weekly_commitment?.message}
+              />
+              <RadioField
+                label="Do you have access to a device for virtual therapy sessions?"
+                name="has_device"
+                register={register}
+                error={errors.has_device?.message}
+              />
+              <TextareaField
+                label="Have you ever wanted to start therapy but faced barriers? If yes, what were they?"
+                helper="Examples: cost, time, fear, stigma"
+                name="therapy_barriers"
+                register={register}
+                error={errors.therapy_barriers?.message}
+              />
             </Section>
 
-            {/* Therapist Preference */}
-            <Section title="Therapist Preference">
-              <div>
-                <label className="block font-display text-xs uppercase tracking-wider text-foreground mb-3">
-                  How would you like to be matched with a therapist?
-                </label>
-                <div className="space-y-2">
-                  {[
-                    { value: 'foundation', label: 'Let the KPF team find a therapist for me' },
-                    { value: 'own', label: 'I have a preferred therapist in mind' },
-                  ].map(opt => (
-                    <label key={opt.value} className="flex items-center gap-3 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
-                      <input type="radio" value={opt.value} {...register('therapist_preference')} className="accent-primary" />
-                      {opt.label}
-                    </label>
-                  ))}
-                </div>
-                {errors.therapist_preference && <p className="text-destructive text-xs mt-1">{errors.therapist_preference.message}</p>}
-              </div>
-
-              {therapistPref === 'own' && (
-                <div className="space-y-4 pt-2">
-                  <Field label="Therapist Name" error={errors.preferred_therapist_name?.message}>
-                    <input {...register('preferred_therapist_name')} className={inputCls(!!errors.preferred_therapist_name)} />
-                  </Field>
-                  <Field label="Therapist Contact Info" error={errors.preferred_therapist_contact?.message}>
-                    <input {...register('preferred_therapist_contact')} className={inputCls(!!errors.preferred_therapist_contact)} />
-                  </Field>
-                </div>
-              )}
-            </Section>
-
-            {/* Introduction Video */}
+            {/* Introduction Video (optional) */}
             <Section title="Introduction Video (Optional)">
               <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-                Record a short video (up to 32MB) introducing yourself and explaining your therapy goals. This is optional but helps us learn more about you.
+                Record a short video introducing yourself and explaining your therapy goals. This is optional but helps us learn more about you.
               </p>
 
               {videoUrl ? (
@@ -348,7 +386,7 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 function RadioField({ label, name, register, error }: { label: string; name: string; register: any; error?: string }) {
   return (
     <div>
-      <label className="block font-display text-xs uppercase tracking-wider text-foreground mb-3">{label}</label>
+      <label className="block font-display text-xs uppercase tracking-wider text-foreground mb-3 leading-relaxed normal-case text-sm">{label}</label>
       <div className="flex gap-6">
         {[{ value: 'true', label: 'Yes' }, { value: 'false', label: 'No' }].map(opt => (
           <label key={opt.value} className="flex items-center gap-2 cursor-pointer text-sm text-muted-foreground hover:text-foreground transition-colors">
@@ -362,15 +400,18 @@ function RadioField({ label, name, register, error }: { label: string; name: str
   );
 }
 
-function TextareaField({ label, name, register, error }: { label: string; name: string; register: any; error?: string }) {
+function TextareaField({ label, helper, name, register, error }: { label: string; helper?: string; name: string; register: any; error?: string }) {
   return (
-    <Field label={label} error={error}>
+    <div>
+      <label className="block text-sm text-foreground mb-1 leading-relaxed">{label}</label>
+      {helper && <p className="text-xs text-muted-foreground mb-2">({helper})</p>}
       <textarea
         {...register(name)}
-        rows={4}
+        rows={3}
         className={`w-full bg-background border ${error ? 'border-destructive' : 'border-border'} px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary transition-colors rounded-sm resize-none`}
       />
-    </Field>
+      {error && <p className="text-destructive text-xs mt-1">{error}</p>}
+    </div>
   );
 }
 

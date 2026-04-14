@@ -127,16 +127,15 @@ export default function CosAdmin() {
                 <div className="space-y-2 text-sm">
                   <DetailRow label="Email" value={selected.email} />
                   <DetailRow label="Phone" value={selected.phone} />
+                  <DetailRow label="Gender" value={selected.gender} />
                   <DetailRow label="DOB" value={selected.date_of_birth} />
                   <DetailRow label="Location" value={selected.city_state} />
                   <DetailRow label="Prior Therapy" value={selected.prior_therapy ? 'Yes' : 'No'} />
                   <DetailRow label="Insurance" value={selected.has_insurance ? 'Yes' : 'No'} />
                   <DetailRow label="Challenges" value={selected.current_challenges?.join(', ')} />
+                  <DetailRow label="Video documentation" value={selected.video_documentation ? 'Yes' : 'No'} />
                   <DetailRow label="Weekly commit" value={selected.weekly_commitment ? 'Yes' : 'No'} />
                   <DetailRow label="Has device" value={selected.has_device ? 'Yes' : 'No'} />
-                  <DetailRow label="Testimonial" value={selected.testimonial_willing ? 'Yes' : 'No'} />
-                  <DetailRow label="Therapist pref" value={selected.therapist_preference === 'foundation' ? 'KPF matched' : 'Own'} />
-                  {selected.preferred_therapist_name && <DetailRow label="Preferred therapist" value={selected.preferred_therapist_name} />}
                 </div>
 
                 <div className="border-t border-border pt-4 space-y-2">
@@ -147,6 +146,16 @@ export default function CosAdmin() {
                 <div className="border-t border-border pt-4 space-y-2">
                   <div className="font-display text-xs uppercase tracking-wider text-muted-foreground mb-1">Motivation</div>
                   <p className="text-xs text-foreground leading-relaxed">{selected.therapy_motivation}</p>
+                </div>
+
+                <div className="border-t border-border pt-4 space-y-2">
+                  <div className="font-display text-xs uppercase tracking-wider text-muted-foreground mb-1">Goals</div>
+                  <p className="text-xs text-foreground leading-relaxed">{selected.therapy_goals}</p>
+                </div>
+
+                <div className="border-t border-border pt-4 space-y-2">
+                  <div className="font-display text-xs uppercase tracking-wider text-muted-foreground mb-1">Barriers</div>
+                  <p className="text-xs text-foreground leading-relaxed">{selected.therapy_barriers}</p>
                 </div>
 
                 {selected.intro_video_url && (
