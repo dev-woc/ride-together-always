@@ -1,4 +1,5 @@
 import { useState, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, ChevronRight, ChevronLeft, Bike, Upload, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -94,6 +95,8 @@ function fileToBase64(file: File): Promise<string> {
 }
 
 export default function RideSignup() {
+  const [searchParams] = useSearchParams();
+  const eventName = searchParams.get('event') || 'Bike N Thrive';
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -183,7 +186,7 @@ export default function RideSignup() {
       const res = await fetch('/api/ride-signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, driver_license_data: licenseData }),
+        body: JSON.stringify({ ...data, driver_license_data: licenseData, event_name: eventName }),
       });
       if (!res.ok) throw new Error('Submission failed');
       setSubmitted(true);
