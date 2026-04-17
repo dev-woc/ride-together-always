@@ -27,6 +27,8 @@ type EventFormValues = {
   featured: boolean;
   signup_link: string;
   sort_order: string;
+  show_yoga: boolean;
+  show_bike_rental: boolean;
 };
 
 const emptyEventForm: EventFormValues = {
@@ -38,6 +40,8 @@ const emptyEventForm: EventFormValues = {
   featured: false,
   signup_link: "",
   sort_order: "0",
+  show_yoga: false,
+  show_bike_rental: false,
 };
 
 async function apiFetch<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
@@ -58,6 +62,14 @@ async function apiFetch<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
   return payload as T;
 }
 
+function buildAutoLink(title: string, showYoga: boolean, showBikeRental: boolean) {
+  if (!title.trim()) return "";
+  let link = `/ride-signup?event=${encodeURIComponent(title.trim())}`;
+  if (showYoga) link += "&yoga=1";
+  if (showBikeRental) link += "&bikes=1";
+  return link;
+}
+
 function toEventPayload(form: EventFormValues) {
   return {
     title: form.title.trim(),
@@ -68,6 +80,8 @@ function toEventPayload(form: EventFormValues) {
     featured: form.featured,
     signup_link: form.signup_link.trim() || null,
     sort_order: Number(form.sort_order) || 0,
+    show_yoga: form.show_yoga,
+    show_bike_rental: form.show_bike_rental,
   };
 }
 
@@ -85,6 +99,8 @@ function toEventFormValues(event: SiteEvent | null): EventFormValues {
     featured: event.featured,
     signup_link: event.signup_link || "",
     sort_order: String(event.sort_order ?? 0),
+    show_yoga: event.show_yoga ?? false,
+    show_bike_rental: event.show_bike_rental ?? false,
   };
 }
 
@@ -391,12 +407,15 @@ export default function Admin() {
                           value={eventForm.title}
                           onChange={(e) => {
                             const title = e.target.value;
-                            const autoLink = title.trim() ? `/ride-signup?event=${encodeURIComponent(title.trim())}` : "";
-                            setEventForm((current) => ({
-                              ...current,
-                              title,
-                              signup_link: current.signup_link === "" || current.signup_link === `/ride-signup?event=${encodeURIComponent(current.title.trim())}` ? autoLink : current.signup_link,
-                            }));
+                            setEventForm((current) => {
+                              const autoLink = buildAutoLink(title, current.show_yoga, current.show_bike_rental);
+                              const prevAuto = buildAutoLink(current.title, current.show_yoga, current.show_bike_rental);
+                              return {
+                                ...current,
+                                title,
+                                signup_link: current.signup_link === "" || current.signup_link === prevAuto ? autoLink : current.signup_link,
+                              };
+                            });
                           }}
                         />
                       </div>
@@ -494,6 +513,42 @@ export default function Admin() {
                         <p className="text-sm text-muted-foreground">Featured items render with the highlighted treatment on the homepage.</p>
                       </div>
                       <Switch checked={eventForm.featured} onCheckedChange={(checked) => setEventForm((current) => ({ ...current, featured: checked }))} />
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-sm border border-border px-4 py-3">
+                      <div>
+                        <p className="font-medium text-foreground">Show yoga signup</p>
+                        <p className="text-sm text-muted-foreground">Adds an optional post-ride yoga question to the signup form.</p>
+                      </div>
+                      <Switch
+                        checked={eventForm.show_yoga}
+                        onCheckedChange={(checked) =>
+                          setEventForm((current) => {
+                            const updated = { ...current, show_yoga: checked };
+                            const prevAuto = buildAutoLink(current.title, current.show_yoga, current.show_bike_rental);
+                            const newAuto = buildAutoLink(updated.title, updated.show_yoga, updated.show_bike_rental);
+                            return { ...updated, signup_link: current.signup_link === prevAuto ? newAuto : current.signup_link };
+                          })
+                        }
+                      />
+                    </div>
+
+                    <div className="flex items-center justify-between rounded-sm border border-border px-4 py-3">
+                      <div>
+                        <p className="font-medium text-foreground">Show bike rental</p>
+                        <p className="text-sm text-muted-foreground">Adds the Lime bike rental step (driver's license + rental waiver) to the signup form.</p>
+                      </div>
+                      <Switch
+                        checked={eventForm.show_bike_rental}
+                        onCheckedChange={(checked) =>
+                          setEventForm((current) => {
+                            const updated = { ...current, show_bike_rental: checked };
+                            const prevAuto = buildAutoLink(current.title, current.show_yoga, current.show_bike_rental);
+                            const newAuto = buildAutoLink(updated.title, updated.show_yoga, updated.show_bike_rental);
+                            return { ...updated, signup_link: current.signup_link === prevAuto ? newAuto : current.signup_link };
+                          })
+                        }
+                      />
                     </div>
 
                     <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">

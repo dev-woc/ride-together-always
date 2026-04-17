@@ -10,8 +10,10 @@ export const defaultEvents: SiteEvent[] = [
     description:
       "A special community ride and wellness experience - group cycling, fresh juices, yoga, coffee, and free Lime bikes. Open to all levels!",
     featured: true,
-    signup_link: "/ride-signup",
+    signup_link: "/ride-signup?event=Bike+N+Thrive&yoga=1&bikes=1",
     sort_order: 0,
+    show_yoga: true,
+    show_bike_rental: true,
   },
   {
     id: "saturday-morning-ride",
@@ -22,8 +24,10 @@ export const defaultEvents: SiteEvent[] = [
     description:
       "Weekly community ride open to all skill levels. Join us for coffee after!",
     featured: false,
-    signup_link: "/ride-signup",
+    signup_link: "/ride-signup?event=Saturday+Morning+Ride",
     sort_order: 1,
+    show_yoga: false,
+    show_bike_rental: false,
   },
   {
     id: "impact-ride",
@@ -36,5 +40,7 @@ export const defaultEvents: SiteEvent[] = [
     featured: false,
     signup_link: null,
     sort_order: 2,
+    show_yoga: false,
+    show_bike_rental: false,
   },
 ];

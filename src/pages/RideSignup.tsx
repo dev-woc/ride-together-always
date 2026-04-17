@@ -98,6 +98,8 @@ function fileToBase64(file: File): Promise<string> {
 export default function RideSignup() {
   const [searchParams] = useSearchParams();
   const eventName = searchParams.get('event') || 'Bike N Thrive';
+  const showYoga = searchParams.get('yoga') === '1';
+  const showBikeRental = searchParams.get('bikes') === '1';
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -135,18 +137,19 @@ export default function RideSignup() {
   const waiverAgreed = watch('waiver_agreed');
   const bikeRentalWaiverAgreed = watch('bike_rental_waiver_agreed');
 
-  // Steps change dynamically based on whether user wants a Lime bike
-  const stepLabels = limeBike
+  // Steps change dynamically based on whether user wants a Lime bike (and if bike rental is enabled for this event)
+  const bikeStepActive = showBikeRental && limeBike;
+  const stepLabels = bikeStepActive
     ? ['Your Info', 'Ride Preferences', 'Bike Rental', 'Waiver & Confirm']
     : ['Your Info', 'Ride Preferences', 'Waiver & Confirm'];
 
   const totalSteps = stepLabels.length;
-  const waiverStep = limeBike ? 3 : 2;
+  const waiverStep = bikeStepActive ? 3 : 2;
 
   const stepFieldMap: Record<number, (keyof FormData)[]> = {
     0: ['email', 'full_name', 'phone_number'],
-    1: ['ride_group', 'yoga_signup', 'lime_bike'],
-    2: limeBike ? [] : ['waiver_agreed'], // bike rental step has no RHF fields (file + manual checkbox)
+    1: ['ride_group', ...(showYoga ? ['yoga_signup' as keyof FormData] : []), ...(showBikeRental ? ['lime_bike' as keyof FormData] : [])],
+    2: bikeStepActive ? [] : ['waiver_agreed'],
     3: ['waiver_agreed'],
   };
 
@@ -155,7 +158,7 @@ export default function RideSignup() {
     const valid = fields.length ? await trigger(fields) : true;
 
     // Validate bike rental step manually
-    if (limeBike && step === 2) {
+    if (bikeStepActive && step === 2) {
       let ok = true;
       if (!licenseFile && !licenseUrl) {
         setLicenseError('Please upload a photo of your driver\'s license');
@@ -369,56 +372,60 @@ export default function RideSignup() {
                       {errors.ride_group && <p className="text-destructive text-xs">{errors.ride_group.message}</p>}
                     </div>
 
-                    <div className="space-y-3">
-                      <Label className="text-foreground">
-                        Optional post-ride yoga with Tammy Yoga? <span className="text-primary">*</span>
-                        <span className="block text-muted-foreground text-xs font-normal mt-0.5">$15 — we'll send you a payment link</span>
-                      </Label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[{ value: true, label: "Yes, I'm in!" }, { value: false, label: 'No thanks' }].map((option) => (
-                          <button
-                            key={String(option.value)}
-                            type="button"
-                            onClick={() => setValue('yoga_signup', option.value, { shouldValidate: true })}
-                            className={`p-3 rounded-lg border-2 font-medium text-sm transition-all duration-200 ${
-                              yogaSignup === option.value ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-muted text-muted-foreground hover:border-muted-foreground'
-                            }`}
-                          >
-                            {option.label}
-                          </button>
-                        ))}
+                    {showYoga && (
+                      <div className="space-y-3">
+                        <Label className="text-foreground">
+                          Optional post-ride yoga with Tammy Yoga? <span className="text-primary">*</span>
+                          <span className="block text-muted-foreground text-xs font-normal mt-0.5">$15 — we'll send you a payment link</span>
+                        </Label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {[{ value: true, label: "Yes, I'm in!" }, { value: false, label: 'No thanks' }].map((option) => (
+                            <button
+                              key={String(option.value)}
+                              type="button"
+                              onClick={() => setValue('yoga_signup', option.value, { shouldValidate: true })}
+                              className={`p-3 rounded-lg border-2 font-medium text-sm transition-all duration-200 ${
+                                yogaSignup === option.value ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-muted text-muted-foreground hover:border-muted-foreground'
+                              }`}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    <div className="space-y-3">
-                      <Label className="text-foreground">
-                        Want a free Lime bike from our sponsor? <span className="text-primary">*</span>
-                      </Label>
-                      <div className="grid grid-cols-2 gap-3">
-                        {[{ value: true, label: 'Yes please!' }, { value: false, label: 'No, I have my own' }].map((option) => (
-                          <button
-                            key={String(option.value)}
-                            type="button"
-                            onClick={() => setValue('lime_bike', option.value, { shouldValidate: true })}
-                            className={`p-3 rounded-lg border-2 font-medium text-sm transition-all duration-200 ${
-                              limeBike === option.value ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-muted text-muted-foreground hover:border-muted-foreground'
-                            }`}
-                          >
-                            {option.label}
-                          </button>
-                        ))}
+                    {showBikeRental && (
+                      <div className="space-y-3">
+                        <Label className="text-foreground">
+                          Want a free Lime bike from our sponsor? <span className="text-primary">*</span>
+                        </Label>
+                        <div className="grid grid-cols-2 gap-3">
+                          {[{ value: true, label: 'Yes please!' }, { value: false, label: 'No, I have my own' }].map((option) => (
+                            <button
+                              key={String(option.value)}
+                              type="button"
+                              onClick={() => setValue('lime_bike', option.value, { shouldValidate: true })}
+                              className={`p-3 rounded-lg border-2 font-medium text-sm transition-all duration-200 ${
+                                limeBike === option.value ? 'border-primary bg-primary/10 text-foreground' : 'border-border bg-muted text-muted-foreground hover:border-muted-foreground'
+                              }`}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                        {limeBike && (
+                          <p className="text-xs text-primary/80 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
+                            You'll need to upload your driver's license and agree to the rental waiver on the next step.
+                          </p>
+                        )}
                       </div>
-                      {limeBike && (
-                        <p className="text-xs text-primary/80 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
-                          You'll need to upload your driver's license and agree to the rental waiver on the next step.
-                        </p>
-                      )}
-                    </div>
+                    )}
                   </motion.div>
                 )}
 
-                {/* Step 2: Bike Rental (only shown when lime_bike = true) */}
-                {step === 2 && limeBike && (
+                {/* Step 2: Bike Rental (only shown when event has bike rental AND user wants one) */}
+                {step === 2 && bikeStepActive && (
                   <motion.div
                     key="step2-bike"
                     initial={{ opacity: 0, x: 20 }}

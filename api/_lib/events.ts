@@ -10,12 +10,17 @@ const eventInputSchema = z.object({
   featured: z.boolean().default(false),
   signup_link: z.string().trim().nullable().optional(),
   sort_order: z.number().int().default(0),
+  show_yoga: z.boolean().default(false),
+  show_bike_rental: z.boolean().default(false),
 });
 
 export type EventInput = z.infer<typeof eventInputSchema>;
 
 export async function listEvents() {
   await ensureEventsTable();
+
+  await sql`ALTER TABLE events ADD COLUMN IF NOT EXISTS show_yoga BOOLEAN NOT NULL DEFAULT FALSE`;
+  await sql`ALTER TABLE events ADD COLUMN IF NOT EXISTS show_bike_rental BOOLEAN NOT NULL DEFAULT FALSE`;
 
   const rows = await sql`
     SELECT
@@ -28,6 +33,8 @@ export async function listEvents() {
       featured,
       signup_link,
       sort_order,
+      show_yoga,
+      show_bike_rental,
       created_at,
       updated_at
     FROM events
@@ -53,7 +60,9 @@ export async function createEvent(input: EventInput) {
       description,
       featured,
       signup_link,
-      sort_order
+      sort_order,
+      show_yoga,
+      show_bike_rental
     )
     VALUES (
       ${input.title},
@@ -63,7 +72,9 @@ export async function createEvent(input: EventInput) {
       ${input.description},
       ${input.featured},
       ${input.signup_link || null},
-      ${input.sort_order}
+      ${input.sort_order},
+      ${input.show_yoga},
+      ${input.show_bike_rental}
     )
     RETURNING
       id,
@@ -75,6 +86,8 @@ export async function createEvent(input: EventInput) {
       featured,
       signup_link,
       sort_order,
+      show_yoga,
+      show_bike_rental,
       created_at,
       updated_at
   `;
@@ -96,6 +109,8 @@ export async function updateEvent(id: string, input: EventInput) {
       featured = ${input.featured},
       signup_link = ${input.signup_link || null},
       sort_order = ${input.sort_order},
+      show_yoga = ${input.show_yoga},
+      show_bike_rental = ${input.show_bike_rental},
       updated_at = NOW()
     WHERE id = ${id}
     RETURNING
@@ -108,6 +123,8 @@ export async function updateEvent(id: string, input: EventInput) {
       featured,
       signup_link,
       sort_order,
+      show_yoga,
+      show_bike_rental,
       created_at,
       updated_at
   `;

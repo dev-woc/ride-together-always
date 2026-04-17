@@ -8,6 +8,8 @@ export type SiteEvent = {
   featured: boolean;
   signup_link: string | null;
   sort_order: number;
+  show_yoga: boolean;
+  show_bike_rental: boolean;
   created_at?: string;
   updated_at?: string;
 };
