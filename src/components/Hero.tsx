@@ -8,7 +8,7 @@ export const Hero = () => {
   const hero = content.hero;
 
   return (
-    <section id="home" className="relative w-full h-screen overflow-hidden">
+    <section id="home" className="relative w-full h-screen overflow-hidden bg-black">
       {/* Full-bleed background video */}
       <video
         autoPlay
@@ -26,20 +26,10 @@ export const Hero = () => {
 
       {/* Content centered over video */}
       <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 text-center">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="w-full max-w-5xl mx-auto"
-        >
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
-            className="font-display text-sm md:text-base text-white/70 uppercase tracking-[0.4em] mb-6"
-          >
+        <div className="w-full max-w-5xl mx-auto">
+          <p className="font-display text-sm md:text-base text-white/70 uppercase tracking-[0.4em] mb-6">
             {hero.hashtag}
-          </motion.p>
+          </p>
 
           <h1 className="font-display font-bold uppercase leading-none mb-6">
             <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-white drop-shadow-lg">
@@ -50,21 +40,11 @@ export const Hero = () => {
             </span>
           </h1>
 
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.6 }}
-            className="font-body text-xl md:text-2xl text-white/80 italic mb-10"
-          >
+          <p className="font-body text-xl md:text-2xl text-white/80 italic mb-10">
             {hero.tagline}
-          </motion.p>
+          </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.7, duration: 0.6 }}
-            className="flex flex-col sm:flex-row gap-4 justify-center items-center"
-          >
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <a
               href={hero.primaryCtaHref}
               className="btn-hero-primary inline-flex items-center justify-center rounded-sm"
@@ -77,8 +57,8 @@ export const Hero = () => {
             >
               {hero.secondaryCtaLabel}
             </a>
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
       </div>
 
       {/* Scroll indicator */}
