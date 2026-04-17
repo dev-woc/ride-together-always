@@ -239,14 +239,16 @@ export default function RideSignup() {
               <CheckCircle className="w-20 h-20 text-primary" />
             </div>
             <h1 className="font-display text-4xl font-bold text-foreground mb-4">YOU'RE IN!</h1>
-            <p className="text-muted-foreground text-lg mb-2">
-              We'll see you Saturday, March 28 at 8:00AM.
-            </p>
-            <p className="text-muted-foreground mb-8">
-              RTW Photography Studio<br />
-              520 N Parramore Ave, Orlando FL 32801<br />
-              <span className="text-primary font-medium">Check-in & massages begin 8:00AM · Ride out 8:45AM</span>
-            </p>
+            {eventMeta && (
+              <>
+                <p className="text-muted-foreground text-lg mb-2">
+                  We'll see you {eventMeta.date_label} at {eventMeta.time_label}.
+                </p>
+                <p className="text-muted-foreground mb-8">
+                  {eventMeta.location}
+                </p>
+              </>
+            )}
             <p className="text-sm text-muted-foreground">
               We'll contact you if there are any weather-related changes. Let's pedal, refresh, and thrive together!
             </p>
@@ -560,12 +562,13 @@ export default function RideSignup() {
                     </button>
                     {errors.waiver_agreed && <p className="text-destructive text-xs">{errors.waiver_agreed.message}</p>}
 
-                    <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3 border border-border">
-                      <p className="font-medium text-foreground mb-1">Meeting Location</p>
-                      <p>RTW Photography Studio</p>
-                      <p>520 N Parramore Ave, Orlando FL 32801</p>
-                      <p className="text-primary mt-1">Check-in & massages begin 8:00AM · Ride out 8:45AM</p>
-                    </div>
+                    {eventMeta && (
+                      <div className="text-xs text-muted-foreground bg-muted/50 rounded-lg p-3 border border-border">
+                        <p className="font-medium text-foreground mb-1">Meeting Location</p>
+                        <p>{eventMeta.location}</p>
+                        <p className="text-primary mt-1">{eventMeta.date_label} · {eventMeta.time_label}</p>
+                      </div>
+                    )}
                   </motion.div>
                 )}
               </AnimatePresence>
