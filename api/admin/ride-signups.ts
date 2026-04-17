@@ -23,19 +23,24 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (!admin) return res.status(403).json({ error: 'Forbidden' });
 
   if (req.method === 'GET') {
-    // ensure column exists for older rows
     await sql`ALTER TABLE ride_signups ADD COLUMN IF NOT EXISTS event_name TEXT NOT NULL DEFAULT 'Bike N Thrive'`;
 
-    const rows = await sql`
-      SELECT id, full_name, email, phone_number, instagram_handle,
-             ride_group, yoga_signup, lime_bike, bike_rental_waiver_agreed,
-             driver_license_data, event_name, created_at
-      FROM ride_signups
-      ORDER BY event_name ASC, created_at DESC
-    `;
+    const [rows, events] = await Promise.all([
+      sql`
+        SELECT id, full_name, email, phone_number, instagram_handle,
+               ride_group, yoga_signup, lime_bike, bike_rental_waiver_agreed,
+               driver_license_data, event_name, created_at
+        FROM ride_signups
+        ORDER BY event_name ASC, created_at DESC
+      `,
+      sql`SELECT title FROM events ORDER BY sort_order ASC, created_at ASC`,
+    ]);
 
-    // group by event_name
+    // Build grouped map seeded with all known event titles (so empty events still show)
     const grouped: Record<string, typeof rows> = {};
+    for (const event of events) {
+      grouped[event.title as string] = [];
+    }
     for (const row of rows) {
       const key = (row.event_name as string) || 'Bike N Thrive';
       if (!grouped[key]) grouped[key] = [];

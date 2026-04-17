@@ -53,7 +53,7 @@ export default function CosAdmin() {
   useEffect(() => { loadApps(filter); }, [filter]);
 
   useEffect(() => {
-    if (tab === 'ride-signups' && signups.length === 0) loadSignups();
+    if (tab === 'ride-signups') loadSignups();
   }, [tab]);
 
   const updateStatus = async (id: string, status: string) => {
