@@ -255,7 +255,7 @@ export default function RideSignup() {
               </div>
             </div>
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-2">
-              BIKE N THRIVE
+              {eventName.toUpperCase()}
             </h1>
             <p className="text-muted-foreground">Saturday, March 28 · 8:00AM · Orlando, FL</p>
           </div>
