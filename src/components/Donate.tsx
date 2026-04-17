@@ -1,11 +1,16 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { useSiteContent } from '@/lib/site-content';
+import { ContactModal } from './ContactModal';
 
 export const Donate = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const { content } = useSiteContent();
+  const donate = content.donate;
+  const [contactOpen, setContactOpen] = useState(false);
 
   return (
     <section className="section-padding bg-background relative overflow-hidden" ref={ref}>
@@ -23,41 +28,44 @@ export const Donate = () => {
           className="max-w-4xl mx-auto text-center"
         >
           <span className="font-display text-sm uppercase tracking-[0.3em] text-primary mb-4 block">
-            Support Our Mission
+            {donate.eyebrow}
           </span>
           <h2 className="section-title text-foreground mb-6">
-            HELP US <span className="text-outline">KEEP PEDALING</span>
+            {donate.headingPrefix} <span className="text-outline">{donate.headingEmphasis}</span>
           </h2>
           <p className="text-muted-foreground text-lg md:text-xl leading-relaxed mb-10 max-w-2xl mx-auto">
-            Your donation helps us provide free mental health resources, organize community rides, 
-            and support individuals on their journey to wellness. Every dollar makes a difference.
+            {donate.body}
           </p>
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              size="lg" 
-              className="font-display uppercase tracking-wider text-lg px-10 py-6 animate-pulse-glow"
-            >
-              Donate Now
-            </Button>
-            <Button 
-              variant="outline" 
+            <a href={donate.primaryCtaHref} target="_blank" rel="noopener noreferrer">
+              <Button
+                size="lg"
+                className="font-display uppercase tracking-wider text-lg px-10 py-6 animate-pulse-glow"
+              >
+                {donate.primaryCtaLabel}
+              </Button>
+            </a>
+            <Button
+              variant="outline"
               size="lg"
               className="font-display uppercase tracking-wider text-lg px-10 py-6"
+              onClick={() => setContactOpen(true)}
             >
-              Become a Member
+              {donate.secondaryCtaLabel}
             </Button>
           </div>
 
           {/* Trust indicators */}
           <div className="mt-12 pt-8 border-t border-border">
             <p className="text-sm text-muted-foreground">
-              Keep Pedaling Foundation is a registered 501(c)(3) nonprofit organization. 
-              All donations are tax-deductible.
+              {donate.trustCopy}
             </p>
           </div>
         </motion.div>
       </div>
+
+      <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
     </section>
   );
 };

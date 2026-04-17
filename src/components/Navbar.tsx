@@ -4,18 +4,18 @@ import { Menu, X, Facebook, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import logo from '@/assets/logo.png';
+import { ContactModal } from './ContactModal';
 
 const navLinks = [
   { name: 'Home', href: '/#home' },
-  { name: 'About', href: '/#about' },
   { name: 'Programs', href: '/#programs' },
   { name: 'Events', href: '/#events' },
-  { name: 'Contact', href: '/#contact' },
 ];
 
 export const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -53,6 +53,12 @@ export const Navbar = () => {
               </a>
             ))}
             <Link
+              to="/about"
+              className="font-display text-sm uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+            >
+              About Us
+            </Link>
+            <Link
               to="/community"
               className="font-display text-sm uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
             >
@@ -66,25 +72,32 @@ export const Navbar = () => {
             </Link>
           </div>
 
-          {/* Social & Donate */}
+          {/* Social & Actions */}
           <div className="hidden lg:flex items-center gap-4">
-            <a href="https://www.facebook.com/people/Keep-Pedaling-Foundation/61565706314697/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-              <Facebook size={20} />
+            <a href="https://www.facebook.com/people/Keep-Pedaling-Foundation/61565706314697/" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Facebook" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Facebook size={20} aria-hidden="true" />
             </a>
-            <a href="https://www.instagram.com/keeppedalingfoundation" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-              <Instagram size={20} />
+            <a href="https://www.instagram.com/keeppedalingfoundation" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram" className="text-muted-foreground hover:text-foreground transition-colors">
+              <Instagram size={20} aria-hidden="true" />
             </a>
-            <Button variant="default" className="ml-4 font-display uppercase tracking-wider">
-              Donate
+            <Button variant="outline" className="ml-2 font-display uppercase tracking-wider" onClick={() => setContactOpen(true)}>
+              Contact Us
             </Button>
+            <a href="https://www.zeffy.com/en-US/donation-form/a4b252d0-143c-4807-b3ab-2f8162d02783" target="_blank" rel="noopener noreferrer">
+              <Button variant="default" className="font-display uppercase tracking-wider">
+                Donate
+              </Button>
+            </a>
           </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
+            aria-label="Toggle navigation menu"
+            aria-expanded={isOpen}
             className="lg:hidden p-2 text-foreground"
           >
-            {isOpen ? <X size={24} /> : <Menu size={24} />}
+            {isOpen ? <X size={24} aria-hidden="true" /> : <Menu size={24} aria-hidden="true" />}
           </button>
         </div>
       </div>
@@ -110,6 +123,13 @@ export const Navbar = () => {
                 </a>
               ))}
               <Link
+                to="/about"
+                onClick={() => setIsOpen(false)}
+                className="font-display text-lg uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors py-2"
+              >
+                About Us
+              </Link>
+              <Link
                 to="/community"
                 onClick={() => setIsOpen(false)}
                 className="font-display text-lg uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors py-2"
@@ -124,20 +144,27 @@ export const Navbar = () => {
                 Mental Health Resources
               </Link>
               <div className="flex items-center gap-4 pt-4 border-t border-border">
-                <a href="https://www.facebook.com/people/Keep-Pedaling-Foundation/61565706314697/" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                  <Facebook size={24} />
+                <a href="https://www.facebook.com/people/Keep-Pedaling-Foundation/61565706314697/" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Facebook" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Facebook size={24} aria-hidden="true" />
                 </a>
-                <a href="https://www.instagram.com/keeppedalingfoundation" target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
-                  <Instagram size={24} />
+                <a href="https://www.instagram.com/keeppedalingfoundation" target="_blank" rel="noopener noreferrer" aria-label="Follow us on Instagram" className="text-muted-foreground hover:text-foreground transition-colors">
+                  <Instagram size={24} aria-hidden="true" />
                 </a>
               </div>
-              <Button variant="default" className="mt-4 font-display uppercase tracking-wider w-full">
-                Donate
+              <Button variant="outline" className="mt-2 font-display uppercase tracking-wider w-full" onClick={() => { setIsOpen(false); setContactOpen(true); }}>
+                Contact Us
               </Button>
+              <a href="https://www.zeffy.com/en-US/donation-form/a4b252d0-143c-4807-b3ab-2f8162d02783" target="_blank" rel="noopener noreferrer">
+                <Button variant="default" className="mt-2 font-display uppercase tracking-wider w-full">
+                  Donate
+                </Button>
+              </a>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
+
+      <ContactModal open={contactOpen} onOpenChange={setContactOpen} />
     </motion.nav>
   );
 };

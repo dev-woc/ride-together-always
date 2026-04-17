@@ -17,13 +17,13 @@ export const defaultSiteContent: SiteContent = {
     titleLine1: "PEDALING FOR",
     titleLine2: "MENTAL HEALTH",
     paragraph1:
-      "At Keep Pedaling Foundation, we are committed to advancing mental health awareness and breaking down barriers to support. Through the transformative power of cycling, we encourage physical well-being while creating a space for individuals to access the vital resources they need.",
+      "Keep Pedaling Foundation is a non-profit dedicated to raising mental health awareness through the power of cycling. Our mission is to create a welcoming community that supports both mental and physical well-being.",
     paragraph2:
-      "Our mission is to help everyone pedal their way toward healing, resilience, and a brighter, healthier future. We believe that when wheels turn, minds heal.",
+      "By combining cycling with mental health advocacy, we help individuals build resilience and find personal growth.",
     stats: [
-      { value: "500+", label: "Riders" },
-      { value: "50+", label: "Events" },
-      { value: "1K+", label: "Miles" },
+      { value: "0", label: "Individuals Who Received Free Therapy" },
+      { value: "50+", label: "Community Events" },
+      { value: "500+", label: "Community Members" },
     ],
   },
   donate: {
@@ -33,11 +33,11 @@ export const defaultSiteContent: SiteContent = {
     body:
       "Your donation helps us provide free mental health resources, organize community rides, and support individuals on their journey to wellness. Every dollar makes a difference.",
     primaryCtaLabel: "Donate Now",
-    primaryCtaHref: "#",
+    primaryCtaHref: "https://www.zeffy.com/en-US/donation-form/a4b252d0-143c-4807-b3ab-2f8162d02783",
     secondaryCtaLabel: "Become a Member",
     secondaryCtaHref: "#",
     trustCopy:
-      "Keep Pedaling Foundation is a registered 501(c)(3) nonprofit organization. All donations are tax-deductible.",
+      "Keep Pedaling Foundation is a registered 501(c)(3) nonprofit organization (EIN: 99-3038427). All donations are tax-deductible.",
   },
   contact: {
     stayConnectedTitle: "Stay Connected",

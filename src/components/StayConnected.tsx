@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { Facebook, Instagram } from 'lucide-react';
+import { useSiteContent } from '@/lib/site-content';
 
 export const StayConnected = () => {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '' });
   const [sent, setSent] = useState(false);
+  const { content } = useSiteContent();
+  const contact = content.contact;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -17,14 +20,16 @@ export const StayConnected = () => {
           className="font-black uppercase text-primary leading-none mb-10"
           style={{ fontSize: 'clamp(3rem, 10vw, 8rem)', letterSpacing: '-0.02em' }}
         >
-          Stay Connected
+          {contact.stayConnectedTitle}
         </h2>
 
         {sent ? (
-          <p className="text-foreground text-xl">Thanks! We'll be in touch.</p>
+          <p className="text-foreground text-xl">{contact.stayConnectedSuccessMessage}</p>
         ) : (
           <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 mb-10">
+            <label htmlFor="sc-first-name" className="sr-only">First Name</label>
             <input
+              id="sc-first-name"
               type="text"
               placeholder="First Name"
               value={form.firstName}
@@ -32,7 +37,9 @@ export const StayConnected = () => {
               required
               className="flex-1 bg-transparent border-b border-muted-foreground text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary py-3 text-base transition-colors"
             />
+            <label htmlFor="sc-last-name" className="sr-only">Last Name</label>
             <input
+              id="sc-last-name"
               type="text"
               placeholder="Last Name"
               value={form.lastName}
@@ -40,7 +47,9 @@ export const StayConnected = () => {
               required
               className="flex-1 bg-transparent border-b border-muted-foreground text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary py-3 text-base transition-colors"
             />
+            <label htmlFor="sc-email" className="sr-only">Email Address</label>
             <input
+              id="sc-email"
               type="email"
               placeholder="Email"
               value={form.email}
@@ -52,14 +61,14 @@ export const StayConnected = () => {
               type="submit"
               className="bg-primary text-primary-foreground font-bold uppercase tracking-widest px-8 py-3 hover:opacity-90 transition-opacity text-sm"
             >
-              Send
+              {contact.stayConnectedButtonLabel}
             </button>
           </form>
         )}
 
         <div className="flex items-center gap-6">
           <a
-            href="https://www.instagram.com/keeppedalingfoundation/"
+            href={contact.instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"
@@ -68,7 +77,7 @@ export const StayConnected = () => {
             <Instagram size={28} />
           </a>
           <a
-            href="https://www.facebook.com/people/Keep-Pedaling-Foundation/61565706314697/"
+            href={contact.facebookUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-muted-foreground hover:text-primary transition-colors"

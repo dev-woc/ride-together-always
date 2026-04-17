@@ -1,10 +1,13 @@
 import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
+import { useSiteContent } from '@/lib/site-content';
 
 export const About = () => {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const { content } = useSiteContent();
+  const about = content.about;
 
   return (
     <section id="about" className="section-padding bg-background" ref={ref}>
@@ -37,39 +40,25 @@ export const About = () => {
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <span className="font-display text-sm uppercase tracking-[0.3em] text-primary mb-4 block">
-              About Us
+              {about.eyebrow}
             </span>
             <h2 className="section-title text-foreground mb-6">
-              PEDALING FOR<br />
-              <span className="text-outline">MENTAL HEALTH</span>
+              {about.titleLine1}<br />
+              <span className="text-outline">{about.titleLine2}</span>
             </h2>
             <div className="space-y-6 text-muted-foreground text-lg leading-relaxed">
-              <p>
-                At Keep Pedaling Foundation, we are committed to advancing mental health 
-                awareness and breaking down barriers to support. Through the transformative 
-                power of cycling, we encourage physical well-being while creating a space 
-                for individuals to access the vital resources they need.
-              </p>
-              <p>
-                Our mission is to help everyone pedal their way toward healing, resilience, 
-                and a brighter, healthier future. We believe that when wheels turn, minds heal.
-              </p>
+              <p>{about.paragraph1}</p>
+              <p>{about.paragraph2}</p>
             </div>
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-6 mt-10">
-              <div className="text-center">
-                <span className="block font-display text-4xl md:text-5xl font-bold text-primary">500+</span>
-                <span className="text-sm text-muted-foreground uppercase tracking-wider">Riders</span>
-              </div>
-              <div className="text-center">
-                <span className="block font-display text-4xl md:text-5xl font-bold text-primary">50+</span>
-                <span className="text-sm text-muted-foreground uppercase tracking-wider">Events</span>
-              </div>
-              <div className="text-center">
-                <span className="block font-display text-4xl md:text-5xl font-bold text-primary">1K+</span>
-                <span className="text-sm text-muted-foreground uppercase tracking-wider">Miles</span>
-              </div>
+              {about.stats.map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <span className="block font-display text-4xl md:text-5xl font-bold text-primary">{stat.value}</span>
+                  <span className="text-sm text-muted-foreground uppercase tracking-wider">{stat.label}</span>
+                </div>
+              ))}
             </div>
           </motion.div>
         </div>

@@ -1,8 +1,12 @@
 import { motion } from 'framer-motion';
 import { ChevronDown } from 'lucide-react';
 import heroImage from '@/assets/hero-cycling.jpg';
+import { useSiteContent } from '@/lib/site-content';
 
 export const Hero = () => {
+  const { content } = useSiteContent();
+  const hero = content.hero;
+
   return (
     <section id="home" className="relative w-full min-h-screen bg-background flex flex-col items-center justify-start overflow-hidden">
 
@@ -21,7 +25,7 @@ export const Hero = () => {
             transition={{ delay: 0.3, duration: 0.6 }}
             className="font-display text-lg md:text-xl text-muted-foreground uppercase tracking-[0.3em] mb-4"
           >
-            #KeepPedaling
+            {hero.hashtag}
           </motion.p>
 
           {/* Contained video window */}
@@ -41,10 +45,10 @@ export const Hero = () => {
           {/* Main Title overlapping below video */}
           <h1 className="font-display font-bold uppercase leading-none -mt-6 mb-4">
             <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-outline-thick">
-              KEEP
+              {hero.titleLine1}
             </span>
             <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-foreground">
-              PEDALING
+              {hero.titleLine2}
             </span>
           </h1>
 
@@ -55,7 +59,7 @@ export const Hero = () => {
             transition={{ delay: 0.5, duration: 0.6 }}
             className="font-body text-xl md:text-2xl text-muted-foreground italic mt-6 mb-10"
           >
-            Biking for the culture, healing for the soul
+            {hero.tagline}
           </motion.p>
 
           {/* CTA Buttons */}
@@ -66,16 +70,16 @@ export const Hero = () => {
             className="flex flex-col sm:flex-row gap-4 justify-center items-center"
           >
             <a
-              href="#programs"
+              href={hero.primaryCtaHref}
               className="btn-hero-primary inline-flex items-center justify-center rounded-sm"
             >
-              Join Our Mission
+              {hero.primaryCtaLabel}
             </a>
             <a
-              href="#about"
+              href={hero.secondaryCtaHref}
               className="btn-hero-outline inline-flex items-center justify-center rounded-sm"
             >
-              Learn More
+              {hero.secondaryCtaLabel}
             </a>
           </motion.div>
         </motion.div>

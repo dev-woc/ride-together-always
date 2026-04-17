@@ -1,8 +1,19 @@
-import { motion } from 'framer-motion';
-import { useInView } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 
-const sponsors: { name: string; tier: 'gold' | 'silver' | 'bronze' }[] = [];
+interface Sponsor {
+  name: string;
+  logo: string;
+  href?: string;
+}
+
+const sponsors: Sponsor[] = [
+  {
+    name: 'Lime',
+    logo: '/sponsors/lime-logo.png',
+    href: 'https://www.li.me',
+  },
+];
 
 export const Sponsors = () => {
   const ref = useRef(null);
@@ -28,26 +39,9 @@ export const Sponsors = () => {
           </p>
         </motion.div>
 
-        {sponsors.length === 0 ? (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={isInView ? { opacity: 1, y: 0 } : {}}
-            transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-center py-16 border border-dashed border-border rounded-sm"
-          >
-            <p className="text-muted-foreground font-display uppercase tracking-wider text-sm">
-              Interested in becoming a sponsor?
-            </p>
-            <a
-              href="mailto:KeepPedalingFoundation@gmail.com"
-              className="inline-block mt-4 text-primary font-display uppercase tracking-wider hover:underline"
-            >
-              Get in Touch →
-            </a>
-          </motion.div>
-        ) : (
-          <div className="flex flex-wrap justify-center gap-8">
-            {sponsors.map((sponsor, index) => (
+        <div className="flex flex-wrap justify-center gap-8">
+          {sponsors.map((sponsor, index) => {
+            const card = (
               <motion.div
                 key={sponsor.name}
                 initial={{ opacity: 0, y: 20 }}
@@ -55,13 +49,38 @@ export const Sponsors = () => {
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 className="flex items-center justify-center w-48 h-24 bg-card border border-border rounded-sm px-6 grayscale hover:grayscale-0 transition-all duration-300"
               >
-                <span className="font-display text-foreground uppercase tracking-wider text-sm text-center">
-                  {sponsor.name}
-                </span>
+                <img
+                  src={sponsor.logo}
+                  alt={sponsor.name}
+                  className="max-h-14 max-w-full object-contain"
+                />
               </motion.div>
-            ))}
-          </div>
-        )}
+            );
+
+            return sponsor.href ? (
+              <a key={sponsor.name} href={sponsor.href} target="_blank" rel="noopener noreferrer">
+                {card}
+              </a>
+            ) : card;
+          })}
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="text-center mt-12"
+        >
+          <p className="text-muted-foreground text-sm">
+            Interested in becoming a sponsor?{' '}
+            <a
+              href="mailto:KeepPedalingFoundation@gmail.com"
+              className="text-primary font-display uppercase tracking-wider hover:underline"
+            >
+              Get in Touch →
+            </a>
+          </p>
+        </motion.div>
       </div>
     </section>
   );

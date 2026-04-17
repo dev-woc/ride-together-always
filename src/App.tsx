@@ -10,6 +10,8 @@ import MentalHealthResources from "./pages/MentalHealthResources";
 import RideSignup from "./pages/RideSignup";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import Legal from "./pages/Legal";
+import About from "./pages/About";
 import { AuthProvider } from "./context/AuthContext";
 import { ProtectedRoute } from "./components/cos/ProtectedRoute";
 import CycleOfSupportLanding from "./pages/cos/CycleOfSupportLanding";
@@ -43,6 +45,9 @@ const App = () => (
             <Route path="/cycle-of-support/apply" element={<ProtectedRoute><CosApply /></ProtectedRoute>} />
             <Route path="/cycle-of-support/dashboard" element={<ProtectedRoute><CosDashboard /></ProtectedRoute>} />
             <Route path="/cycle-of-support/admin" element={<ProtectedRoute adminOnly><CosAdmin /></ProtectedRoute>} />
+
+            <Route path="/legal" element={<Legal />} />
+            <Route path="/about" element={<About />} />
 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
