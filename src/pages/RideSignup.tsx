@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useUploadThing } from '@/lib/uploadthing';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -100,6 +100,20 @@ export default function RideSignup() {
   const eventName = searchParams.get('event') || 'Bike N Thrive';
   const showYoga = searchParams.get('yoga') === '1';
   const showBikeRental = searchParams.get('bikes') === '1';
+  const [eventMeta, setEventMeta] = useState<{ date_label: string; time_label: string; location: string } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/events')
+      .then(r => r.json())
+      .then(data => {
+        const match = (data.events ?? []).find(
+          (e: { title: string }) => e.title.toLowerCase() === eventName.toLowerCase()
+        );
+        if (match) setEventMeta({ date_label: match.date_label, time_label: match.time_label, location: match.location });
+      })
+      .catch(() => {});
+  }, [eventName]);
+
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -260,7 +274,11 @@ export default function RideSignup() {
             <h1 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-2">
               {eventName.toUpperCase()}
             </h1>
-            <p className="text-muted-foreground">Saturday, March 28 · 8:00AM · Orlando, FL</p>
+            {eventMeta && (
+              <p className="text-muted-foreground">
+                {eventMeta.date_label} · {eventMeta.time_label} · {eventMeta.location}
+              </p>
+            )}
           </div>
 
           {/* Step indicator */}
