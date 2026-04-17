@@ -8,61 +8,57 @@ export const Hero = () => {
   const hero = content.hero;
 
   return (
-    <section id="home" className="relative w-full min-h-screen bg-background flex flex-col items-center justify-start overflow-hidden">
+    <section id="home" className="relative w-full h-screen overflow-hidden">
+      {/* Full-bleed background video */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        poster={heroImage}
+        className="absolute inset-0 w-full h-full object-cover"
+      >
+        <source src="/hero-video.mp4" type="video/mp4" />
+      </video>
 
-      {/* Content layered over video window */}
-      <div className="relative z-10 w-full flex flex-col items-center pt-16 pb-8">
+      {/* Dark gradient overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
+
+      {/* Content centered over video */}
+      <div className="relative z-10 h-full flex flex-col items-center justify-center px-6 text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="w-full max-w-5xl mx-auto px-6 text-center"
+          className="w-full max-w-5xl mx-auto"
         >
-          {/* Hashtag above video */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="font-display text-lg md:text-xl text-muted-foreground uppercase tracking-[0.3em] mb-4"
+            className="font-display text-sm md:text-base text-white/70 uppercase tracking-[0.4em] mb-6"
           >
             {hero.hashtag}
           </motion.p>
 
-          {/* Contained video window */}
-          <div className="relative mx-auto mb-0" style={{ width: '42%', maxWidth: '520px' }}>
-            <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="w-full h-auto block"
-              poster={heroImage}
-            >
-              <source src="/hero-video.mp4" type="video/mp4" />
-            </video>
-          </div>
-
-          {/* Main Title overlapping below video */}
-          <h1 className="font-display font-bold uppercase leading-none -mt-6 mb-4">
-            <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-outline-thick">
+          <h1 className="font-display font-bold uppercase leading-none mb-6">
+            <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-white drop-shadow-lg">
               {hero.titleLine1}
             </span>
-            <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-foreground">
+            <span className="block text-6xl sm:text-7xl md:text-8xl lg:text-9xl text-outline-thick drop-shadow-lg">
               {hero.titleLine2}
             </span>
           </h1>
 
-          {/* Tagline */}
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.5, duration: 0.6 }}
-            className="font-body text-xl md:text-2xl text-muted-foreground italic mt-6 mb-10"
+            className="font-body text-xl md:text-2xl text-white/80 italic mb-10"
           >
             {hero.tagline}
           </motion.p>
 
-          {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -77,7 +73,7 @@ export const Hero = () => {
             </a>
             <a
               href={hero.secondaryCtaHref}
-              className="btn-hero-outline inline-flex items-center justify-center rounded-sm"
+              className="btn-hero-outline inline-flex items-center justify-center rounded-sm !border-white !text-white hover:!bg-white hover:!text-black"
             >
               {hero.secondaryCtaLabel}
             </a>
@@ -85,17 +81,17 @@ export const Hero = () => {
         </motion.div>
       </div>
 
-      {/* Scroll Indicator */}
+      {/* Scroll indicator */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1, duration: 0.6 }}
-        className="pb-8"
+        className="absolute bottom-8 left-1/2 -translate-x-1/2 z-10"
       >
         <motion.div
           animate={{ y: [0, 10, 0] }}
           transition={{ repeat: Infinity, duration: 1.5 }}
-          className="text-muted-foreground"
+          className="text-white/60"
         >
           <ChevronDown size={32} />
         </motion.div>
