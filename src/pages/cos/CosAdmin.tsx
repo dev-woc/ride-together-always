@@ -263,7 +263,7 @@ export default function CosAdmin() {
                               </div>
                               <div className="flex flex-col items-end gap-1 shrink-0 text-xs text-muted-foreground">
                                 {signup.yoga_signup && <span className="text-primary">Yoga</span>}
-                                {signup.lime_bike && <span className="text-primary">Lime Bike</span>}
+                                {signup.lime_bike && <span className="text-primary">Bike Rental</span>}
                                 <span>{new Date(signup.created_at).toLocaleDateString()}</span>
                               </div>
                             </div>
@@ -289,7 +289,7 @@ export default function CosAdmin() {
                     <DetailRow label="Instagram" value={selectedSignup.instagram_handle || '—'} />
                     <DetailRow label="Ride Group" value={selectedSignup.ride_group} />
                     <DetailRow label="Yoga Sign-Up" value={selectedSignup.yoga_signup ? 'Yes' : 'No'} />
-                    <DetailRow label="Lime Bike" value={selectedSignup.lime_bike ? 'Yes' : 'No'} />
+                    <DetailRow label="Bike Rental" value={selectedSignup.lime_bike ? 'Yes' : 'No'} />
                     <DetailRow label="Bike Waiver" value={selectedSignup.bike_rental_waiver_agreed ? 'Agreed' : 'N/A'} />
                     <DetailRow label="Signed Up" value={new Date(selectedSignup.created_at).toLocaleString()} />
                   </div>

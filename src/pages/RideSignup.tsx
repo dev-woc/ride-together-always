@@ -137,7 +137,7 @@ export default function RideSignup() {
   const waiverAgreed = watch('waiver_agreed');
   const bikeRentalWaiverAgreed = watch('bike_rental_waiver_agreed');
 
-  // Steps change dynamically based on whether user wants a Lime bike (and if bike rental is enabled for this event)
+  // Steps change dynamically based on whether user wants a bike rental (and if bike rental is enabled for this event)
   const bikeStepActive = showBikeRental && limeBike;
   const stepLabels = bikeStepActive
     ? ['Your Info', 'Ride Preferences', 'Bike Rental', 'Waiver & Confirm']
@@ -398,7 +398,7 @@ export default function RideSignup() {
                     {showBikeRental && (
                       <div className="space-y-3">
                         <Label className="text-foreground">
-                          Want a free Lime bike from our sponsor? <span className="text-primary">*</span>
+                          Need a bike rental? <span className="text-primary">*</span>
                         </Label>
                         <div className="grid grid-cols-2 gap-3">
                           {[{ value: true, label: 'Yes please!' }, { value: false, label: 'No, I have my own' }].map((option) => (
