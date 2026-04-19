@@ -5,6 +5,7 @@ import { Bike, Heart, Users, Brain } from 'lucide-react';
 import cyclingDetail from '@/assets/community-ride.png';
 import mentalHealthRide from '@/assets/mental-health-ride.png';
 import cosCycling from '@/assets/cos-cycling.png';
+import communityEvents from '@/assets/community-events.png';
 
 const programs = [
   {
@@ -32,7 +33,7 @@ const programs = [
     icon: Users,
     title: 'Community Events',
     description: 'Monthly gatherings, group rides, and wellness workshops that bring our community together for collective healing.',
-    image: null,
+    image: communityEvents,
   },
 ];
 
