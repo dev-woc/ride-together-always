@@ -74,7 +74,7 @@ export const Programs = () => {
               className="group relative bg-card rounded-sm overflow-hidden border border-border card-hover"
             >
               {program.image ? (
-                <div className="relative h-48 overflow-hidden">
+                <div className="relative h-64 overflow-hidden">
                   <img
                     src={program.image}
                     alt={program.title}
