@@ -3,7 +3,7 @@ import { useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { Bike, Heart, Users, Brain } from 'lucide-react';
 import cyclingDetail from '@/assets/community-ride.png';
-import wellnessCycling from '@/assets/wellness-cycling.jpg';
+import mentalHealthRide from '@/assets/mental-health-ride.png';
 import cosCycling from '@/assets/cos-cycling.png';
 
 const programs = [
@@ -25,7 +25,7 @@ const programs = [
     icon: Brain,
     title: 'Mental Health Resources',
     description: 'Access a wide range of resources tailored to support your mental well-being, from therapy connections to practical wellness tips.',
-    image: wellnessCycling,
+    image: mentalHealthRide,
     link: '/resources',
   },
   {
