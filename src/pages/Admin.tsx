@@ -16,7 +16,32 @@ import { defaultSiteContent, mergeSiteContent } from "@/lib/site-content";
 import type { SiteEvent } from "@/types/events";
 import type { AboutContent, ContactContent, DonateContent, HeroContent, SiteContent } from "@/types/site-content";
 
-type AdminTab = "events" | "hero" | "about" | "donate" | "contact";
+type AdminTab = "events" | "hero" | "about" | "donate" | "contact" | "resources";
+
+type Resource = {
+  id: string;
+  title: string;
+  description: string;
+  link: string;
+  urgent: boolean;
+  sort_order: number;
+};
+
+type ResourceFormValues = {
+  title: string;
+  description: string;
+  link: string;
+  urgent: boolean;
+  sort_order: string;
+};
+
+const emptyResourceForm: ResourceFormValues = {
+  title: "",
+  description: "",
+  link: "",
+  urgent: false,
+  sort_order: "0",
+};
 
 type EventFormValues = {
   title: string;
@@ -115,6 +140,8 @@ export default function Admin() {
   const [aboutForm, setAboutForm] = useState<AboutContent>(defaultSiteContent.about);
   const [donateForm, setDonateForm] = useState<DonateContent>(defaultSiteContent.donate);
   const [contactForm, setContactForm] = useState<ContactContent>(defaultSiteContent.contact);
+  const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
+  const [resourceForm, setResourceForm] = useState<ResourceFormValues>(emptyResourceForm);
 
   const sessionQuery = useQuery({
     queryKey: ["admin-session"],
@@ -134,6 +161,63 @@ export default function Admin() {
       return mergeSiteContent(data.content);
     },
     enabled: sessionQuery.data?.authenticated === true,
+  });
+
+  const resourcesQuery = useQuery({
+    queryKey: ["admin-resources"],
+    queryFn: () => apiFetch<{ resources: Resource[] }>("/api/admin/resources"),
+    enabled: sessionQuery.data?.authenticated === true,
+  });
+
+  const selectedResource = useMemo(
+    () => resourcesQuery.data?.resources.find((r) => r.id === selectedResourceId) ?? null,
+    [resourcesQuery.data?.resources, selectedResourceId]
+  );
+
+  const createResourceMutation = useMutation({
+    mutationFn: (values: ResourceFormValues) =>
+      apiFetch<{ resource: Resource }>("/api/admin/resources", {
+        method: "POST",
+        body: JSON.stringify({ ...values, sort_order: Number(values.sort_order) || 0 }),
+      }),
+    onSuccess: async ({ resource }) => {
+      await queryClient.invalidateQueries({ queryKey: ["admin-resources"] });
+      await queryClient.invalidateQueries({ queryKey: ["resources"] });
+      setSelectedResourceId(resource.id);
+      setResourceForm({ ...resource, sort_order: String(resource.sort_order) });
+      toast({ title: "Resource created" });
+    },
+    onError: (error: Error) => toast({ title: "Create failed", description: error.message, variant: "destructive" }),
+  });
+
+  const updateResourceMutation = useMutation({
+    mutationFn: ({ id, values }: { id: string; values: ResourceFormValues }) =>
+      apiFetch<{ resource: Resource }>(`/api/admin/resources?id=${id}`, {
+        method: "PUT",
+        body: JSON.stringify({ ...values, sort_order: Number(values.sort_order) || 0 }),
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin-resources"] });
+      await queryClient.invalidateQueries({ queryKey: ["resources"] });
+      toast({ title: "Resource updated" });
+    },
+    onError: (error: Error) => toast({ title: "Update failed", description: error.message, variant: "destructive" }),
+  });
+
+  const deleteResourceMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<{ success: boolean }>(`/api/admin/resources?id=${id}`, {
+        method: "DELETE",
+        body: JSON.stringify({}),
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin-resources"] });
+      await queryClient.invalidateQueries({ queryKey: ["resources"] });
+      setSelectedResourceId(null);
+      setResourceForm(emptyResourceForm);
+      toast({ title: "Resource deleted" });
+    },
+    onError: (error: Error) => toast({ title: "Delete failed", description: error.message, variant: "destructive" }),
   });
 
   const selectedEvent = useMemo(
@@ -336,6 +420,7 @@ export default function Admin() {
             <TabsTrigger value="about">About</TabsTrigger>
             <TabsTrigger value="donate">Donate</TabsTrigger>
             <TabsTrigger value="contact">Contact</TabsTrigger>
+            <TabsTrigger value="resources">Resources</TabsTrigger>
           </TabsList>
 
           <TabsContent value="events">
@@ -791,6 +876,106 @@ export default function Admin() {
                 </form>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="resources">
+            <div className="grid gap-6 lg:grid-cols-[360px,1fr]">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="font-display uppercase">Resources</CardTitle>
+                    <CardDescription>Select a resource or create a new one.</CardDescription>
+                  </div>
+                  <Button size="sm" onClick={() => { setSelectedResourceId(null); setResourceForm(emptyResourceForm); }}>
+                    New
+                  </Button>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  {resourcesQuery.isLoading ? (
+                    <p className="text-sm text-muted-foreground">Loading...</p>
+                  ) : resourcesQuery.data?.resources.length ? (
+                    resourcesQuery.data.resources.map((r) => (
+                      <button
+                        key={r.id}
+                        type="button"
+                        onClick={() => { setSelectedResourceId(r.id); setResourceForm({ ...r, sort_order: String(r.sort_order) }); }}
+                        className={`w-full rounded-sm border p-4 text-left transition-colors ${
+                          r.id === selectedResourceId ? "border-primary bg-primary/5" : "border-border hover:border-primary/40"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="font-display text-sm uppercase text-foreground truncate">{r.title}</p>
+                          {r.urgent && <span className="shrink-0 rounded-sm bg-primary px-2 py-0.5 text-[10px] uppercase tracking-wider text-primary-foreground">Urgent</span>}
+                        </div>
+                      </button>
+                    ))
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No resources yet.</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-display uppercase">{selectedResource ? "Edit Resource" : "Create Resource"}</CardTitle>
+                  <CardDescription>Changes update the Mental Health Resources page immediately.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form
+                    className="grid gap-5"
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (selectedResource) {
+                        updateResourceMutation.mutate({ id: selectedResource.id, values: resourceForm });
+                      } else {
+                        createResourceMutation.mutate(resourceForm);
+                      }
+                    }}
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="res-title">Title</Label>
+                      <Input required id="res-title" value={resourceForm.title} onChange={(e) => setResourceForm((c) => ({ ...c, title: e.target.value }))} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="res-desc">Description</Label>
+                      <Textarea required id="res-desc" rows={3} value={resourceForm.description} onChange={(e) => setResourceForm((c) => ({ ...c, description: e.target.value }))} />
+                    </div>
+                    <div className="grid gap-5 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="res-link">Link (URL)</Label>
+                        <Input required id="res-link" type="url" value={resourceForm.link} onChange={(e) => setResourceForm((c) => ({ ...c, link: e.target.value }))} placeholder="https://" />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="res-sort">Sort Order</Label>
+                        <Input id="res-sort" type="number" value={resourceForm.sort_order} onChange={(e) => setResourceForm((c) => ({ ...c, sort_order: e.target.value }))} />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between rounded-sm border border-border px-4 py-3">
+                      <div>
+                        <p className="font-medium text-foreground">Mark as urgent</p>
+                        <p className="text-sm text-muted-foreground">Highlights the card with a primary color — use for crisis lines.</p>
+                      </div>
+                      <Switch checked={resourceForm.urgent} onCheckedChange={(checked) => setResourceForm((c) => ({ ...c, urgent: checked }))} />
+                    </div>
+                    <div className="flex flex-col gap-3 sm:flex-row sm:justify-between">
+                      <div className="flex gap-3">
+                        <Button type="submit" disabled={createResourceMutation.isPending || updateResourceMutation.isPending}>
+                          {createResourceMutation.isPending || updateResourceMutation.isPending ? "Saving..." : selectedResource ? "Update" : "Create"}
+                        </Button>
+                        <Button type="button" variant="outline" onClick={() => setResourceForm(selectedResource ? { ...selectedResource, sort_order: String(selectedResource.sort_order) } : emptyResourceForm)}>
+                          Reset
+                        </Button>
+                      </div>
+                      {selectedResource && (
+                        <Button type="button" variant="destructive" onClick={() => deleteResourceMutation.mutate(selectedResource.id)} disabled={deleteResourceMutation.isPending}>
+                          {deleteResourceMutation.isPending ? "Deleting..." : "Delete"}
+                        </Button>
+                      )}
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="contact">

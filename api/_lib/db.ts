@@ -10,6 +10,7 @@ export const sql = neon(databaseUrl);
 
 let eventsTableReady: Promise<void> | null = null;
 let siteContentTableReady: Promise<void> | null = null;
+let resourcesTableReady: Promise<void> | null = null;
 
 export function ensureEventsTable() {
   if (!eventsTableReady) {
@@ -31,6 +32,25 @@ export function ensureEventsTable() {
   }
 
   return eventsTableReady;
+}
+
+export function ensureResourcesTable() {
+  if (!resourcesTableReady) {
+    resourcesTableReady = sql`
+      CREATE TABLE IF NOT EXISTS resources (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        link TEXT NOT NULL,
+        urgent BOOLEAN NOT NULL DEFAULT FALSE,
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `.then(() => undefined);
+  }
+
+  return resourcesTableReady;
 }
 
 export function ensureSiteContentTable() {
