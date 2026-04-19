@@ -13,6 +13,7 @@ const programs = [
     title: 'Cycle of Support',
     description: 'Our signature program connecting individuals with mental health professionals—providing at least 6 weeks of free therapy to support real, lasting change.',
     image: cosCycling,
+    imagePosition: 'object-[center_30%]',
     link: '/cycle-of-support',
   },
   {
@@ -20,6 +21,7 @@ const programs = [
     title: 'Cycling Club',
     description: 'Join our community rides designed for all skill levels. Experience the joy of cycling while connecting with like-minded individuals.',
     image: cyclingDetail,
+    imagePosition: 'object-center',
     link: '/#events',
   },
   {
@@ -27,6 +29,7 @@ const programs = [
     title: 'Mental Health Resources',
     description: 'Access a wide range of resources tailored to support your mental well-being, from therapy connections to practical wellness tips.',
     image: mentalHealthRide,
+    imagePosition: 'object-center',
     link: '/resources',
   },
   {
@@ -34,6 +37,7 @@ const programs = [
     title: 'Community Events',
     description: 'Monthly gatherings, group rides, and wellness workshops that bring our community together for collective healing.',
     image: communityEvents,
+    imagePosition: 'object-center',
   },
 ];
 
@@ -74,7 +78,7 @@ export const Programs = () => {
                   <img
                     src={program.image}
                     alt={program.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    className={`w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 ${program.imagePosition ?? 'object-center'}`}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-card to-transparent" />
                 </div>
