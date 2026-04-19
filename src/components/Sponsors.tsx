@@ -47,7 +47,7 @@ export const Sponsors = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={isInView ? { opacity: 1, y: 0 } : {}}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
-                className="flex items-center justify-center w-48 h-24 bg-card border border-border rounded-sm px-6 grayscale hover:grayscale-0 transition-all duration-300"
+                className="flex items-center justify-center w-56 h-24 bg-white border border-border rounded-sm px-6 transition-all duration-300 hover:shadow-lg"
               >
                 <img
                   src={sponsor.logo}
