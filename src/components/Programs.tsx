@@ -9,18 +9,18 @@ import communityEvents from '@/assets/community-events.png';
 
 const programs = [
   {
+    icon: Heart,
+    title: 'Cycle of Support',
+    description: 'Our signature program connecting individuals with mental health professionals—providing at least 6 weeks of free therapy to support real, lasting change.',
+    image: cosCycling,
+    link: '/cycle-of-support',
+  },
+  {
     icon: Bike,
     title: 'Cycling Club',
     description: 'Join our community rides designed for all skill levels. Experience the joy of cycling while connecting with like-minded individuals.',
     image: cyclingDetail,
     link: '/#events',
-  },
-  {
-    icon: Heart,
-    title: 'Cycle of Support',
-    description: 'Our signature program connecting cyclists with mental health professionals for transformative healing journeys.',
-    image: cosCycling,
-    link: '/cycle-of-support',
   },
   {
     icon: Brain,
