@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { Bike, Heart, Users, Brain } from 'lucide-react';
-import cyclingDetail from '@/assets/cycling-detail.jpg';
+import cyclingDetail from '@/assets/community-ride.png';
 import wellnessCycling from '@/assets/wellness-cycling.jpg';
 
 const programs = [
