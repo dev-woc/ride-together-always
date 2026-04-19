@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import { Bike, Heart, Users, Brain } from 'lucide-react';
 import cyclingDetail from '@/assets/community-ride.png';
 import wellnessCycling from '@/assets/wellness-cycling.jpg';
+import cosCycling from '@/assets/cos-cycling.png';
 
 const programs = [
   {
@@ -17,7 +18,7 @@ const programs = [
     icon: Heart,
     title: 'Cycle of Support',
     description: 'Our signature program connecting cyclists with mental health professionals for transformative healing journeys.',
-    image: null,
+    image: cosCycling,
     link: '/cycle-of-support',
   },
   {
