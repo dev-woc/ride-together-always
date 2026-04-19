@@ -4,14 +4,14 @@ import { motion, useInView } from 'framer-motion';
 const stories = [
   {
     id: 'zay',
-    src: '/impact/zay-interview.mov',
+    src: '/impact/zay-interview.mp4',
     title: "Zay's Story",
     description:
       'Hear directly from a community member about how Keep Pedaling Foundation helped them find healing through cycling and mental health support.',
   },
   {
     id: 'therapy-001',
-    src: '/impact/kpf-therapy-001.mov',
+    src: '/impact/kpf-therapy-001.mp4',
     title: 'KPF Therapy Impact',
     description:
       'A first-hand look at the free therapy resources KPF provides and the real difference they make in the lives of our community members.',
