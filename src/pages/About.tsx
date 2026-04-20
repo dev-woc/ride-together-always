@@ -1,8 +1,11 @@
 import { motion } from 'framer-motion';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import communityCycling from '@/assets/community-cycling.jpg';
+import foundersGroup from '@/assets/founders-group.jpg';
 import wellnessCycling from '@/assets/wellness-cycling.jpg';
+import founderDimitri from '@/assets/founder-dimitri.png';
+import founderKeron from '@/assets/founder-keron.png';
+import founderMikenson from '@/assets/founder-mikenson.png';
 
 const founders = [
   {
@@ -10,6 +13,7 @@ const founders = [
     title: 'Co-Founder',
     location: 'Orlando, FL',
     bio: 'Emergency Management Consultant originally from Fort Pierce, FL. Mikenson channels his expertise in crisis response into building mental health infrastructure for the KPF community, ensuring everyone has access to the support they need.',
+    photo: founderMikenson,
   },
   {
     name: 'Keron Thompson',
@@ -17,6 +21,7 @@ const founders = [
     title: 'Co-Founder',
     location: 'Orlando, FL',
     bio: 'Promoter and Event Planner with a deep passion for fitness and inspiring healthy lifestyles. Keron brings the energy and vision that turns every KPF ride into an unforgettable community experience.',
+    photo: founderKeron,
   },
   {
     name: 'Dimitri Jean-Pierre',
@@ -24,6 +29,7 @@ const founders = [
     title: 'Co-Founder',
     location: 'Orlando, FL',
     bio: 'Health and Life Insurance agent dedicated to helping others and investing in younger generations. Dimitri ensures our community has the resources and protection they need to pedal forward with confidence.',
+    photo: founderDimitri,
   },
 ];
 
@@ -134,8 +140,8 @@ const About = () => {
               className="relative"
             >
               <img
-                src={communityCycling}
-                alt="KPF community ride"
+                src={foundersGroup}
+                alt="KPF founders"
                 className="w-full h-auto rounded-sm object-cover aspect-[4/3]"
               />
               <div className="absolute -bottom-4 -left-4 w-28 h-28 border-4 border-primary rounded-sm -z-10" />
@@ -172,11 +178,17 @@ const About = () => {
                 transition={{ duration: 0.6, delay: index * 0.15 }}
                 className="bg-card border border-border rounded-sm p-8"
               >
-                <div className="w-16 h-16 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center mb-6">
-                  <span className="font-display font-bold text-primary text-xl">
-                    {founder.name.charAt(0)}
-                  </span>
-                </div>
+                {founder.photo ? (
+                  <div className="w-24 h-24 rounded-full overflow-hidden border-2 border-primary mb-6">
+                    <img src={founder.photo} alt={founder.name} className="w-full h-full object-cover object-top" />
+                  </div>
+                ) : (
+                  <div className="w-16 h-16 rounded-full bg-primary/10 border-2 border-primary flex items-center justify-center mb-6">
+                    <span className="font-display font-bold text-primary text-xl">
+                      {founder.name.charAt(0)}
+                    </span>
+                  </div>
+                )}
                 <h3 className="font-display font-bold uppercase text-foreground text-lg">
                   {founder.name}
                 </h3>
