@@ -24,7 +24,7 @@ export const About = () => {
               <video
                 controls
                 playsInline
-                className="relative z-10 w-full h-auto aspect-[4/3] object-cover"
+                className="relative z-10 w-full h-auto aspect-[4/3] object-cover scale-[0.92]"
               >
                 <source src="/intro-promo.mp4" type="video/mp4" />
               </video>
