@@ -52,13 +52,13 @@ export const ImpactStories = () => {
               transition={{ duration: 0.6, delay: index * 0.2 }}
               className="flex flex-col"
             >
-              <div className="relative overflow-hidden rounded-sm bg-muted aspect-video">
+              <div className="relative overflow-hidden rounded-sm bg-muted">
                 <video
                   controls
                   playsInline
                   preload="metadata"
                   aria-label={story.title}
-                  className="w-full h-full object-cover"
+                  className="w-full aspect-video object-contain"
                 >
                   <source src={story.src} type="video/mp4" />
                   <p className="text-muted-foreground p-4">

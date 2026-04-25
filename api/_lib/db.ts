@@ -11,6 +11,7 @@ export const sql = neon(databaseUrl);
 let eventsTableReady: Promise<void> | null = null;
 let siteContentTableReady: Promise<void> | null = null;
 let resourcesTableReady: Promise<void> | null = null;
+let communityPhotosTableReady: Promise<void> | null = null;
 
 export function ensureEventsTable() {
   if (!eventsTableReady) {
@@ -65,4 +66,22 @@ export function ensureSiteContentTable() {
   }
 
   return siteContentTableReady;
+}
+
+export function ensureCommunityPhotosTable() {
+  if (!communityPhotosTableReady) {
+    communityPhotosTableReady = sql`
+      CREATE TABLE IF NOT EXISTS community_photos (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        image_url TEXT NOT NULL,
+        file_key TEXT NOT NULL,
+        alt_text TEXT NOT NULL DEFAULT '',
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `.then(() => undefined);
+  }
+
+  return communityPhotosTableReady;
 }

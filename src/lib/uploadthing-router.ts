@@ -1,4 +1,5 @@
-import { createUploadthing, type FileRouter } from 'uploadthing/server';
+import { UploadThingError, createUploadthing, type FileRouter } from 'uploadthing/server';
+import { isAdminAuthenticated } from '../../api/_lib/auth';
 
 const f = createUploadthing();
 
@@ -12,6 +13,17 @@ export const ourFileRouter = {
     .middleware(async () => ({}))
     .onUploadComplete(async ({ file }) => {
       console.log('License upload complete:', file.url);
+    }),
+  communityPhoto: f({ image: { maxFileSize: '8MB', maxFileCount: 1 } })
+    .middleware(async ({ req }) => {
+      if (!(await isAdminAuthenticated(req))) {
+        throw new UploadThingError("Unauthorized");
+      }
+
+      return {};
+    })
+    .onUploadComplete(async ({ file }) => {
+      console.log('Community photo upload complete:', file.url);
     }),
 } satisfies FileRouter;
 

@@ -13,10 +13,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { defaultSiteContent, mergeSiteContent } from "@/lib/site-content";
+import { uploadFiles } from "@/lib/uploadthing";
+import type { CommunityPhoto } from "@/types/community-photo";
 import type { SiteEvent } from "@/types/events";
 import type { AboutContent, ContactContent, DonateContent, HeroContent, SiteContent } from "@/types/site-content";
 
-type AdminTab = "events" | "hero" | "about" | "donate" | "contact" | "resources";
+type AdminTab = "events" | "hero" | "about" | "donate" | "contact" | "community" | "resources";
 
 type Resource = {
   id: string;
@@ -35,11 +37,21 @@ type ResourceFormValues = {
   sort_order: string;
 };
 
+type CommunityPhotoFormValues = {
+  alt_text: string;
+  sort_order: string;
+};
+
 const emptyResourceForm: ResourceFormValues = {
   title: "",
   description: "",
   link: "",
   urgent: false,
+  sort_order: "0",
+};
+
+const emptyCommunityPhotoForm: CommunityPhotoFormValues = {
+  alt_text: "",
   sort_order: "0",
 };
 
@@ -142,6 +154,8 @@ export default function Admin() {
   const [contactForm, setContactForm] = useState<ContactContent>(defaultSiteContent.contact);
   const [selectedResourceId, setSelectedResourceId] = useState<string | null>(null);
   const [resourceForm, setResourceForm] = useState<ResourceFormValues>(emptyResourceForm);
+  const [communityPhotoForm, setCommunityPhotoForm] = useState<CommunityPhotoFormValues>(emptyCommunityPhotoForm);
+  const [communityPhotoFile, setCommunityPhotoFile] = useState<File | null>(null);
 
   const sessionQuery = useQuery({
     queryKey: ["admin-session"],
@@ -166,6 +180,12 @@ export default function Admin() {
   const resourcesQuery = useQuery({
     queryKey: ["admin-resources"],
     queryFn: () => apiFetch<{ resources: Resource[] }>("/api/admin/resources"),
+    enabled: sessionQuery.data?.authenticated === true,
+  });
+
+  const communityPhotosQuery = useQuery({
+    queryKey: ["admin-community-photos"],
+    queryFn: () => apiFetch<{ photos: CommunityPhoto[] }>("/api/admin/community-photos"),
     enabled: sessionQuery.data?.authenticated === true,
   });
 
@@ -220,6 +240,49 @@ export default function Admin() {
     onError: (error: Error) => toast({ title: "Delete failed", description: error.message, variant: "destructive" }),
   });
 
+  const uploadCommunityPhotoMutation = useMutation({
+    mutationFn: async ({ file, values }: { file: File; values: CommunityPhotoFormValues }) => {
+      const uploadedFiles = await uploadFiles("communityPhoto", { files: [file] });
+      const uploadedFile = uploadedFiles[0];
+
+      if (!uploadedFile) {
+        throw new Error("Upload did not return a file");
+      }
+
+      return apiFetch<{ photo: CommunityPhoto }>("/api/admin/community-photos", {
+        method: "POST",
+        body: JSON.stringify({
+          image_url: uploadedFile.ufsUrl || uploadedFile.url,
+          file_key: uploadedFile.key,
+          alt_text: values.alt_text.trim(),
+          sort_order: Number(values.sort_order) || 0,
+        }),
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin-community-photos"] });
+      await queryClient.invalidateQueries({ queryKey: ["community-photos"] });
+      setCommunityPhotoForm(emptyCommunityPhotoForm);
+      setCommunityPhotoFile(null);
+      toast({ title: "Community photo uploaded" });
+    },
+    onError: (error: Error) => toast({ title: "Upload failed", description: error.message, variant: "destructive" }),
+  });
+
+  const deleteCommunityPhotoMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<{ success: boolean }>(`/api/admin/community-photos?id=${id}`, {
+        method: "DELETE",
+        body: JSON.stringify({}),
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin-community-photos"] });
+      await queryClient.invalidateQueries({ queryKey: ["community-photos"] });
+      toast({ title: "Community photo removed" });
+    },
+    onError: (error: Error) => toast({ title: "Delete failed", description: error.message, variant: "destructive" }),
+  });
+
   const selectedEvent = useMemo(
     () => eventsQuery.data?.events.find((event) => event.id === selectedEventId) ?? null,
     [eventsQuery.data?.events, selectedEventId]
@@ -264,6 +327,7 @@ export default function Admin() {
       await queryClient.invalidateQueries({ queryKey: ["admin-session"] });
       queryClient.removeQueries({ queryKey: ["admin-events"] });
       queryClient.removeQueries({ queryKey: ["admin-site-content"] });
+      queryClient.removeQueries({ queryKey: ["admin-community-photos"] });
     },
   });
 
@@ -420,6 +484,7 @@ export default function Admin() {
             <TabsTrigger value="about">About</TabsTrigger>
             <TabsTrigger value="donate">Donate</TabsTrigger>
             <TabsTrigger value="contact">Contact</TabsTrigger>
+            <TabsTrigger value="community">Community Photos</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
           </TabsList>
 
@@ -876,6 +941,127 @@ export default function Admin() {
                 </form>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="community">
+            <div className="grid gap-6 lg:grid-cols-[420px,1fr]">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-display uppercase">Upload Community Photo</CardTitle>
+                  <CardDescription>Add a photo to the public Our Community gallery.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form
+                    className="grid gap-5"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+
+                      if (!communityPhotoFile) {
+                        toast({
+                          title: "Photo required",
+                          description: "Choose an image file before uploading.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+
+                      uploadCommunityPhotoMutation.mutate({
+                        file: communityPhotoFile,
+                        values: communityPhotoForm,
+                      });
+                    }}
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="community-photo-file">Image File</Label>
+                      <Input
+                        id="community-photo-file"
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => setCommunityPhotoFile(event.target.files?.[0] ?? null)}
+                      />
+                      <p className="text-xs text-muted-foreground">Uploads go to hosted storage and appear in the gallery immediately after save.</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="community-photo-alt">Alt Text</Label>
+                      <Input
+                        id="community-photo-alt"
+                        value={communityPhotoForm.alt_text}
+                        onChange={(event) => setCommunityPhotoForm((current) => ({ ...current, alt_text: event.target.value }))}
+                        placeholder="Describe the photo for accessibility"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="community-photo-sort">Sort Order</Label>
+                      <Input
+                        id="community-photo-sort"
+                        type="number"
+                        value={communityPhotoForm.sort_order}
+                        onChange={(event) => setCommunityPhotoForm((current) => ({ ...current, sort_order: event.target.value }))}
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button type="submit" disabled={uploadCommunityPhotoMutation.isPending}>
+                        {uploadCommunityPhotoMutation.isPending ? "Uploading..." : "Upload Photo"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setCommunityPhotoForm(emptyCommunityPhotoForm);
+                          setCommunityPhotoFile(null);
+                        }}
+                      >
+                        Reset
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-display uppercase">Current Gallery Photos</CardTitle>
+                  <CardDescription>These images feed the public Our Community carousel in sort order.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {communityPhotosQuery.isLoading ? (
+                    <p className="text-sm text-muted-foreground">Loading photos...</p>
+                  ) : communityPhotosQuery.data?.photos.length ? (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {communityPhotosQuery.data.photos.map((photo) => (
+                        <div key={photo.id} className="overflow-hidden rounded-lg border border-border">
+                          <img src={photo.image_url} alt={photo.alt_text || "Community photo"} className="h-48 w-full object-cover" />
+                          <div className="space-y-3 p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-foreground">Sort order: {photo.sort_order}</p>
+                                <p className="mt-1 text-sm text-muted-foreground break-words">
+                                  {photo.alt_text || "No alt text provided."}
+                                </p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => deleteCommunityPhotoMutation.mutate(photo.id)}
+                                disabled={deleteCommunityPhotoMutation.isPending}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No uploaded photos yet. The public page is still using bundled fallback images.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="resources">
