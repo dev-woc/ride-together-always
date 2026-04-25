@@ -12,6 +12,7 @@ let eventsTableReady: Promise<void> | null = null;
 let siteContentTableReady: Promise<void> | null = null;
 let resourcesTableReady: Promise<void> | null = null;
 let communityPhotosTableReady: Promise<void> | null = null;
+let communityVideosTableReady: Promise<void> | null = null;
 
 export function ensureEventsTable() {
   if (!eventsTableReady) {
@@ -84,4 +85,22 @@ export function ensureCommunityPhotosTable() {
   }
 
   return communityPhotosTableReady;
+}
+
+export function ensureCommunityVideosTable() {
+  if (!communityVideosTableReady) {
+    communityVideosTableReady = sql`
+      CREATE TABLE IF NOT EXISTS community_videos (
+        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+        video_url TEXT NOT NULL,
+        file_key TEXT NOT NULL,
+        title TEXT NOT NULL DEFAULT '',
+        sort_order INTEGER NOT NULL DEFAULT 0,
+        created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+      )
+    `.then(() => undefined);
+  }
+
+  return communityVideosTableReady;
 }

@@ -1,7 +1,8 @@
 import { motion, useInView } from 'framer-motion';
 import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { ExternalLink, BookOpen, Phone, MessageCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { ExternalLink, BookOpen, Phone, MessageCircle, Heart } from 'lucide-react';
 
 type Resource = {
   id: string;
@@ -83,6 +84,44 @@ export const Resources = () => {
             Whether you're seeking information, support groups, or practical tips,
             we have the tools to help you on your journey.
           </p>
+        </motion.div>
+
+        {/* Cycle of Support — KPF's own program */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.7, delay: 0.1 }}
+          className="mb-10"
+        >
+          <Link
+            to="/cycle-of-support"
+            className="group block p-8 rounded-sm border-2 border-primary bg-primary/5 hover:bg-primary/10 transition-all duration-300"
+          >
+            <div className="flex flex-col sm:flex-row gap-6 items-start">
+              <div className="w-14 h-14 flex-shrink-0 rounded-sm bg-primary flex items-center justify-center">
+                <Heart size={28} className="text-primary-foreground" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <span className="font-display text-xs uppercase tracking-[0.3em] text-primary">
+                    KPF Program
+                  </span>
+                  <span className="text-xs font-display uppercase tracking-wider text-primary">
+                    Applications Open →
+                  </span>
+                </div>
+                <h3 className="font-display text-2xl font-black uppercase text-foreground group-hover:text-primary transition-colors mb-3">
+                  CYCLE OF SUPPORT
+                </h3>
+                <p className="text-muted-foreground leading-relaxed">
+                  KPF's flagship mental health initiative — selected participants receive <strong className="text-foreground">6 weeks of free sponsored therapy</strong> with professional counselors. Built on the belief that everyone deserves access to care, community, and the opportunity to grow.
+                </p>
+                <span className="inline-block mt-4 text-xs font-display uppercase tracking-wider text-primary">
+                  Rolling applications · Learn more & apply
+                </span>
+              </div>
+            </div>
+          </Link>
         </motion.div>
 
         <div className="grid md:grid-cols-2 gap-6">

@@ -1,5 +1,6 @@
 import { Navbar } from '@/components/Navbar';
 import { Gallery } from '@/components/Gallery';
+import { CommunityVideos } from '@/components/CommunityVideos';
 import { Footer } from '@/components/Footer';
 
 const Community = () => {
@@ -8,6 +9,7 @@ const Community = () => {
       <Navbar />
       <div className="pt-24">
         <Gallery />
+        <CommunityVideos />
       </div>
       <Footer />
     </div>

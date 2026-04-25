@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { defaultSiteContent, mergeSiteContent } from "@/lib/site-content";
 import { uploadFiles } from "@/lib/uploadthing";
 import type { CommunityPhoto } from "@/types/community-photo";
+import type { CommunityVideo } from "@/types/community-video";
 import type { SiteEvent } from "@/types/events";
 import type { AboutContent, ContactContent, DonateContent, HeroContent, SiteContent } from "@/types/site-content";
 
@@ -42,6 +43,11 @@ type CommunityPhotoFormValues = {
   sort_order: string;
 };
 
+type CommunityVideoFormValues = {
+  title: string;
+  sort_order: string;
+};
+
 const emptyResourceForm: ResourceFormValues = {
   title: "",
   description: "",
@@ -52,6 +58,11 @@ const emptyResourceForm: ResourceFormValues = {
 
 const emptyCommunityPhotoForm: CommunityPhotoFormValues = {
   alt_text: "",
+  sort_order: "0",
+};
+
+const emptyCommunityVideoForm: CommunityVideoFormValues = {
+  title: "",
   sort_order: "0",
 };
 
@@ -156,6 +167,8 @@ export default function Admin() {
   const [resourceForm, setResourceForm] = useState<ResourceFormValues>(emptyResourceForm);
   const [communityPhotoForm, setCommunityPhotoForm] = useState<CommunityPhotoFormValues>(emptyCommunityPhotoForm);
   const [communityPhotoFile, setCommunityPhotoFile] = useState<File | null>(null);
+  const [communityVideoForm, setCommunityVideoForm] = useState<CommunityVideoFormValues>(emptyCommunityVideoForm);
+  const [communityVideoFile, setCommunityVideoFile] = useState<File | null>(null);
 
   const sessionQuery = useQuery({
     queryKey: ["admin-session"],
@@ -186,6 +199,12 @@ export default function Admin() {
   const communityPhotosQuery = useQuery({
     queryKey: ["admin-community-photos"],
     queryFn: () => apiFetch<{ photos: CommunityPhoto[] }>("/api/admin/community-photos"),
+    enabled: sessionQuery.data?.authenticated === true,
+  });
+
+  const communityVideosQuery = useQuery({
+    queryKey: ["admin-community-videos"],
+    queryFn: () => apiFetch<{ videos: CommunityVideo[] }>("/api/admin/community-videos"),
     enabled: sessionQuery.data?.authenticated === true,
   });
 
@@ -283,6 +302,49 @@ export default function Admin() {
     onError: (error: Error) => toast({ title: "Delete failed", description: error.message, variant: "destructive" }),
   });
 
+  const uploadCommunityVideoMutation = useMutation({
+    mutationFn: async ({ file, values }: { file: File; values: CommunityVideoFormValues }) => {
+      const uploadedFiles = await uploadFiles("communityVideo", { files: [file] });
+      const uploadedFile = uploadedFiles[0];
+
+      if (!uploadedFile) {
+        throw new Error("Upload did not return a file");
+      }
+
+      return apiFetch<{ video: CommunityVideo }>("/api/admin/community-videos", {
+        method: "POST",
+        body: JSON.stringify({
+          video_url: uploadedFile.ufsUrl || uploadedFile.url,
+          file_key: uploadedFile.key,
+          title: values.title.trim(),
+          sort_order: Number(values.sort_order) || 0,
+        }),
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin-community-videos"] });
+      await queryClient.invalidateQueries({ queryKey: ["community-videos"] });
+      setCommunityVideoForm(emptyCommunityVideoForm);
+      setCommunityVideoFile(null);
+      toast({ title: "Community video uploaded" });
+    },
+    onError: (error: Error) => toast({ title: "Upload failed", description: error.message, variant: "destructive" }),
+  });
+
+  const deleteCommunityVideoMutation = useMutation({
+    mutationFn: (id: string) =>
+      apiFetch<{ success: boolean }>(`/api/admin/community-videos?id=${id}`, {
+        method: "DELETE",
+        body: JSON.stringify({}),
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin-community-videos"] });
+      await queryClient.invalidateQueries({ queryKey: ["community-videos"] });
+      toast({ title: "Community video removed" });
+    },
+    onError: (error: Error) => toast({ title: "Delete failed", description: error.message, variant: "destructive" }),
+  });
+
   const selectedEvent = useMemo(
     () => eventsQuery.data?.events.find((event) => event.id === selectedEventId) ?? null,
     [eventsQuery.data?.events, selectedEventId]
@@ -328,6 +390,7 @@ export default function Admin() {
       queryClient.removeQueries({ queryKey: ["admin-events"] });
       queryClient.removeQueries({ queryKey: ["admin-site-content"] });
       queryClient.removeQueries({ queryKey: ["admin-community-photos"] });
+      queryClient.removeQueries({ queryKey: ["admin-community-videos"] });
     },
   });
 
@@ -484,7 +547,7 @@ export default function Admin() {
             <TabsTrigger value="about">About</TabsTrigger>
             <TabsTrigger value="donate">Donate</TabsTrigger>
             <TabsTrigger value="contact">Contact</TabsTrigger>
-            <TabsTrigger value="community">Community Photos</TabsTrigger>
+            <TabsTrigger value="community">Community Media</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
           </TabsList>
 
@@ -1058,6 +1121,131 @@ export default function Admin() {
                     </div>
                   ) : (
                     <p className="text-sm text-muted-foreground">No uploaded photos yet. The public page is still using bundled fallback images.</p>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Community Videos */}
+            <div className="grid gap-6 lg:grid-cols-[420px,1fr] mt-8">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-display uppercase">Upload Community Video</CardTitle>
+                  <CardDescription>Add a video to the Our Community section.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <form
+                    className="grid gap-5"
+                    onSubmit={(event) => {
+                      event.preventDefault();
+
+                      if (!communityVideoFile) {
+                        toast({
+                          title: "Video required",
+                          description: "Choose a video file before uploading.",
+                          variant: "destructive",
+                        });
+                        return;
+                      }
+
+                      uploadCommunityVideoMutation.mutate({
+                        file: communityVideoFile,
+                        values: communityVideoForm,
+                      });
+                    }}
+                  >
+                    <div className="space-y-2">
+                      <Label htmlFor="community-video-file">Video File</Label>
+                      <Input
+                        id="community-video-file"
+                        type="file"
+                        accept="video/*"
+                        onChange={(event) => setCommunityVideoFile(event.target.files?.[0] ?? null)}
+                      />
+                      <p className="text-xs text-muted-foreground">Max 256 MB. Appears in the Community Videos section below the photo gallery.</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="community-video-title">Title (optional)</Label>
+                      <Input
+                        id="community-video-title"
+                        value={communityVideoForm.title}
+                        onChange={(event) => setCommunityVideoForm((current) => ({ ...current, title: event.target.value }))}
+                        placeholder="e.g. Bike N Thrive Recap"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="community-video-sort">Sort Order</Label>
+                      <Input
+                        id="community-video-sort"
+                        type="number"
+                        value={communityVideoForm.sort_order}
+                        onChange={(event) => setCommunityVideoForm((current) => ({ ...current, sort_order: event.target.value }))}
+                      />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <Button type="submit" disabled={uploadCommunityVideoMutation.isPending}>
+                        {uploadCommunityVideoMutation.isPending ? "Uploading..." : "Upload Video"}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => {
+                          setCommunityVideoForm(emptyCommunityVideoForm);
+                          setCommunityVideoFile(null);
+                        }}
+                      >
+                        Reset
+                      </Button>
+                    </div>
+                  </form>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="font-display uppercase">Current Community Videos</CardTitle>
+                  <CardDescription>These videos appear in the Community Videos section on the Our Community page.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {communityVideosQuery.isLoading ? (
+                    <p className="text-sm text-muted-foreground">Loading videos...</p>
+                  ) : communityVideosQuery.data?.videos.length ? (
+                    <div className="grid gap-4 md:grid-cols-2">
+                      {communityVideosQuery.data.videos.map((video) => (
+                        <div key={video.id} className="overflow-hidden rounded-lg border border-border">
+                          <video
+                            src={video.video_url}
+                            controls
+                            preload="metadata"
+                            className="w-full aspect-video object-contain bg-muted"
+                          />
+                          <div className="space-y-3 p-4">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="min-w-0">
+                                <p className="text-sm font-medium text-foreground truncate">
+                                  {video.title || "Untitled"}
+                                </p>
+                                <p className="text-xs text-muted-foreground">Sort order: {video.sort_order}</p>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => deleteCommunityVideoMutation.mutate(video.id)}
+                                disabled={deleteCommunityVideoMutation.isPending}
+                              >
+                                Delete
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No videos uploaded yet.</p>
                   )}
                 </CardContent>
               </Card>
