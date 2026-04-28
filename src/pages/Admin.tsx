@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
-import { CalendarIcon, Clock } from "lucide-react";
+import { CalendarIcon, Clock, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +19,46 @@ import type { CommunityVideo } from "@/types/community-video";
 import type { SiteEvent } from "@/types/events";
 import type { AboutContent, ContactContent, DonateContent, HeroContent, SiteContent } from "@/types/site-content";
 
-type AdminTab = "events" | "hero" | "about" | "donate" | "contact" | "community" | "resources";
+type AdminTab = "signups" | "events" | "hero" | "about" | "donate" | "contact" | "community" | "resources";
+
+type RideSignup = {
+  id: string;
+  full_name: string;
+  email: string;
+  phone_number: string;
+  instagram_handle: string | null;
+  ride_group: string;
+  yoga_signup: boolean;
+  lime_bike: boolean;
+  bike_rental_waiver_agreed: boolean;
+  driver_license_data: string | null;
+  event_name: string;
+  created_at: string;
+};
+
+function exportSignupsCsv(signups: RideSignup[], label: string) {
+  const headers = ["Name", "Email", "Phone", "Instagram", "Event", "Ride Group", "Yoga", "Bike Rental", "Bike Waiver", "Signed Up"];
+  const rows = signups.map((s) => [
+    `"${s.full_name}"`,
+    `"${s.email}"`,
+    `"${s.phone_number}"`,
+    `"${s.instagram_handle ?? ""}"`,
+    `"${s.event_name}"`,
+    `"${s.ride_group}"`,
+    s.yoga_signup ? "Yes" : "No",
+    s.lime_bike ? "Yes" : "No",
+    s.bike_rental_waiver_agreed ? "Yes" : "No",
+    `"${new Date(s.created_at).toLocaleString()}"`,
+  ].join(","));
+  const csv = [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `ride-signups-${label.replace(/\s+/g, "-").toLowerCase()}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 type Resource = {
   id: string;
@@ -169,6 +208,8 @@ export default function Admin() {
   const [communityPhotoFile, setCommunityPhotoFile] = useState<File | null>(null);
   const [communityVideoForm, setCommunityVideoForm] = useState<CommunityVideoFormValues>(emptyCommunityVideoForm);
   const [communityVideoFile, setCommunityVideoFile] = useState<File | null>(null);
+  const [selectedSignupId, setSelectedSignupId] = useState<string | null>(null);
+  const [signupEventFilter, setSignupEventFilter] = useState<string>("all");
 
   const sessionQuery = useQuery({
     queryKey: ["admin-session"],
@@ -205,6 +246,12 @@ export default function Admin() {
   const communityVideosQuery = useQuery({
     queryKey: ["admin-community-videos"],
     queryFn: () => apiFetch<{ videos: CommunityVideo[] }>("/api/admin/community-videos"),
+    enabled: sessionQuery.data?.authenticated === true,
+  });
+
+  const rideSignupsQuery = useQuery({
+    queryKey: ["admin-ride-signups"],
+    queryFn: () => apiFetch<{ signups: RideSignup[]; grouped: Record<string, RideSignup[]> }>("/api/admin/ride-signups"),
     enabled: sessionQuery.data?.authenticated === true,
   });
 
@@ -391,6 +438,7 @@ export default function Admin() {
       queryClient.removeQueries({ queryKey: ["admin-site-content"] });
       queryClient.removeQueries({ queryKey: ["admin-community-photos"] });
       queryClient.removeQueries({ queryKey: ["admin-community-videos"] });
+      queryClient.removeQueries({ queryKey: ["admin-ride-signups"] });
     },
   });
 
@@ -542,6 +590,7 @@ export default function Admin() {
 
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as AdminTab)} className="space-y-6">
           <TabsList className="h-auto flex-wrap justify-start gap-2 bg-transparent p-0">
+            <TabsTrigger value="signups">Ride Sign-Ups</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="hero">Hero</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
@@ -550,6 +599,173 @@ export default function Admin() {
             <TabsTrigger value="community">Community Media</TabsTrigger>
             <TabsTrigger value="resources">Resources</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="signups">
+            {(() => {
+              const allSignups = rideSignupsQuery.data?.signups ?? [];
+              const grouped = rideSignupsQuery.data?.grouped ?? {};
+              const eventNames = Object.keys(grouped);
+              const filtered = signupEventFilter === "all" ? allSignups : (grouped[signupEventFilter] ?? []);
+              const selectedSignup = allSignups.find((s) => s.id === selectedSignupId) ?? null;
+              const yogaCount = filtered.filter((s) => s.yoga_signup).length;
+              const bikeCount = filtered.filter((s) => s.lime_bike).length;
+
+              return (
+                <div className="space-y-6">
+                  {/* Header row */}
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div>
+                      <h2 className="font-display text-xl font-bold uppercase text-foreground">Ride Sign-Ups</h2>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {filtered.length} sign-up{filtered.length !== 1 ? "s" : ""}
+                        {yogaCount > 0 && ` · ${yogaCount} yoga`}
+                        {bikeCount > 0 && ` · ${bikeCount} bike rental${bikeCount !== 1 ? "s" : ""}`}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={filtered.length === 0}
+                      onClick={() => exportSignupsCsv(filtered, signupEventFilter === "all" ? "all-events" : signupEventFilter)}
+                      className="font-display uppercase tracking-wider text-xs"
+                    >
+                      <Download size={14} className="mr-2" />
+                      Export CSV
+                    </Button>
+                  </div>
+
+                  {/* Event filter tabs */}
+                  {eventNames.length > 0 && (
+                    <div className="flex gap-2 flex-wrap">
+                      <button
+                        onClick={() => { setSignupEventFilter("all"); setSelectedSignupId(null); }}
+                        className={`font-display text-xs uppercase tracking-wider px-4 py-2 border transition-colors rounded-sm ${
+                          signupEventFilter === "all" ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
+                        }`}
+                      >
+                        All ({allSignups.length})
+                      </button>
+                      {eventNames.map((name) => (
+                        <button
+                          key={name}
+                          onClick={() => { setSignupEventFilter(name); setSelectedSignupId(null); }}
+                          className={`font-display text-xs uppercase tracking-wider px-4 py-2 border transition-colors rounded-sm ${
+                            signupEventFilter === name ? "bg-primary text-primary-foreground border-primary" : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
+                          }`}
+                        >
+                          {name} ({grouped[name]?.length ?? 0})
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Main content */}
+                  <div className="flex gap-6 items-start">
+                    <div className="flex-1 min-w-0">
+                      {rideSignupsQuery.isLoading ? (
+                        <div className="flex items-center justify-center py-20">
+                          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      ) : filtered.length === 0 ? (
+                        <div className="bg-card border border-border rounded-sm p-12 text-center">
+                          <p className="text-muted-foreground text-sm">No sign-ups yet{signupEventFilter !== "all" ? ` for ${signupEventFilter}` : ""}.</p>
+                        </div>
+                      ) : (
+                        <div className="bg-card border border-border rounded-sm overflow-hidden">
+                          {/* Table header */}
+                          <div className="hidden md:grid grid-cols-[2fr,2fr,1.5fr,1fr,1fr,1fr,1fr] gap-3 px-4 py-3 border-b border-border bg-muted/50">
+                            {["Name", "Email", "Phone", "Group", "Yoga", "Bike", "Date"].map((h) => (
+                              <span key={h} className="font-display text-xs uppercase tracking-wider text-muted-foreground">{h}</span>
+                            ))}
+                          </div>
+                          {/* Table rows */}
+                          {filtered.map((signup, i) => (
+                            <button
+                              key={signup.id}
+                              onClick={() => setSelectedSignupId(selectedSignupId === signup.id ? null : signup.id)}
+                              className={`w-full text-left transition-colors ${
+                                selectedSignupId === signup.id ? "bg-primary/5 border-l-2 border-l-primary" : "hover:bg-muted/40"
+                              } ${i !== 0 ? "border-t border-border" : ""}`}
+                            >
+                              {/* Desktop row */}
+                              <div className="hidden md:grid grid-cols-[2fr,2fr,1.5fr,1fr,1fr,1fr,1fr] gap-3 px-4 py-3 items-center">
+                                <span className="font-medium text-sm text-foreground truncate">{signup.full_name}</span>
+                                <span className="text-xs text-muted-foreground truncate">{signup.email}</span>
+                                <span className="text-xs text-muted-foreground">{signup.phone_number}</span>
+                                <span className="text-xs text-muted-foreground capitalize">{signup.ride_group}</span>
+                                <span className={`text-xs font-medium ${signup.yoga_signup ? "text-primary" : "text-muted-foreground"}`}>
+                                  {signup.yoga_signup ? "Yes" : "—"}
+                                </span>
+                                <span className={`text-xs font-medium ${signup.lime_bike ? "text-primary" : "text-muted-foreground"}`}>
+                                  {signup.lime_bike ? "Yes" : "—"}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(signup.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                              {/* Mobile card */}
+                              <div className="md:hidden px-4 py-3">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div>
+                                    <p className="font-medium text-sm text-foreground">{signup.full_name}</p>
+                                    <p className="text-xs text-muted-foreground">{signup.email}</p>
+                                    <p className="text-xs text-muted-foreground capitalize">{signup.ride_group} · {signup.event_name}</p>
+                                  </div>
+                                  <div className="text-right text-xs text-muted-foreground shrink-0">
+                                    {signup.yoga_signup && <p className="text-primary">Yoga</p>}
+                                    {signup.lime_bike && <p className="text-primary">Bike</p>}
+                                    <p>{new Date(signup.created_at).toLocaleDateString()}</p>
+                                  </div>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Detail panel */}
+                    {selectedSignup && (
+                      <div className="w-80 shrink-0 bg-card border border-border rounded-sm p-5 space-y-4 self-start sticky top-6">
+                        <div className="flex items-start justify-between">
+                          <h3 className="font-display text-base font-bold uppercase text-foreground leading-tight">{selectedSignup.full_name}</h3>
+                          <button onClick={() => setSelectedSignupId(null)} className="text-muted-foreground hover:text-foreground text-lg leading-none ml-2">×</button>
+                        </div>
+                        <div className="space-y-2 text-sm">
+                          {[
+                            ["Event", selectedSignup.event_name],
+                            ["Email", selectedSignup.email],
+                            ["Phone", selectedSignup.phone_number],
+                            ["Instagram", selectedSignup.instagram_handle || "—"],
+                            ["Ride Group", selectedSignup.ride_group],
+                            ["Yoga", selectedSignup.yoga_signup ? "Yes" : "No"],
+                            ["Bike Rental", selectedSignup.lime_bike ? "Yes" : "No"],
+                            ["Bike Waiver", selectedSignup.bike_rental_waiver_agreed ? "Agreed" : "N/A"],
+                            ["Signed Up", new Date(selectedSignup.created_at).toLocaleString()],
+                          ].map(([label, value]) => (
+                            <div key={label} className="flex justify-between gap-3">
+                              <span className="font-display text-xs uppercase tracking-wider text-muted-foreground whitespace-nowrap">{label}</span>
+                              <span className="text-xs text-foreground text-right capitalize">{value}</span>
+                            </div>
+                          ))}
+                        </div>
+                        {selectedSignup.driver_license_data && (
+                          <div className="border-t border-border pt-4">
+                            <p className="font-display text-xs uppercase tracking-wider text-muted-foreground mb-2">Driver's License</p>
+                            <img
+                              src={selectedSignup.driver_license_data}
+                              alt="Driver's license"
+                              className="w-full rounded-sm border border-border object-contain max-h-40"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </TabsContent>
 
           <TabsContent value="events">
             <div className="grid gap-6 lg:grid-cols-[360px,1fr]">

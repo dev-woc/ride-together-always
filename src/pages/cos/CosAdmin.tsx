@@ -6,7 +6,7 @@ import { LogOut, ChevronDown } from 'lucide-react';
 
 const STATUSES = ['all', 'pending', 'reviewing', 'approved', 'rejected'] as const;
 type Status = typeof STATUSES[number];
-type Tab = 'applications' | 'ride-signups';
+type Tab = 'applications';
 
 const STATUS_COLORS: Record<string, string> = {
   pending: 'bg-yellow-500/10 text-yellow-600 border-yellow-500/20',
@@ -26,11 +26,6 @@ export default function CosAdmin() {
   const [selected, setSelected] = useState<any>(null);
   const [updating, setUpdating] = useState(false);
 
-  // Ride signups state
-  const [signups, setSignups] = useState<any[]>([]);
-  const [signupsGrouped, setSignupsGrouped] = useState<Record<string, any[]>>({});
-  const [signupsLoading, setSignupsLoading] = useState(false);
-  const [selectedSignup, setSelectedSignup] = useState<any>(null);
 
   const loadApps = async (status: Status) => {
     setAppsLoading(true);
@@ -41,20 +36,7 @@ export default function CosAdmin() {
     setAppsLoading(false);
   };
 
-  const loadSignups = async () => {
-    setSignupsLoading(true);
-    const res = await fetch('/api/admin/ride-signups', { headers: { Authorization: `Bearer ${token}` } });
-    const data = await res.json();
-    setSignups(data.signups ?? []);
-    setSignupsGrouped(data.grouped ?? {});
-    setSignupsLoading(false);
-  };
-
   useEffect(() => { loadApps(filter); }, [filter]);
-
-  useEffect(() => {
-    if (tab === 'ride-signups') loadSignups();
-  }, [tab]);
 
   const updateStatus = async (id: string, status: string) => {
     setUpdating(true);
@@ -84,24 +66,10 @@ export default function CosAdmin() {
             </button>
           </div>
 
-          {/* Top-level tabs */}
-          <div className="flex gap-1 mb-8 border-b border-border">
-            {([
-              { key: 'applications', label: 'COS Applications' },
-              { key: 'ride-signups', label: 'Ride Sign-Ups' },
-            ] as { key: Tab; label: string }[]).map(t => (
-              <button
-                key={t.key}
-                onClick={() => { setTab(t.key); setSelected(null); setSelectedSignup(null); }}
-                className={`font-display text-xs uppercase tracking-wider px-5 py-2.5 border-b-2 transition-colors ${
-                  tab === t.key
-                    ? 'border-primary text-foreground'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
+          <div className="mb-8 border-b border-border">
+            <button className="font-display text-xs uppercase tracking-wider px-5 py-2.5 border-b-2 border-primary text-foreground">
+              COS Applications
+            </button>
           </div>
 
           {/* ── Applications Tab ── */}
@@ -229,85 +197,6 @@ export default function CosAdmin() {
             </>
           )}
 
-          {/* ── Ride Sign-Ups Tab ── */}
-          {tab === 'ride-signups' && (
-            <div className="flex gap-6">
-              <div className="flex-1 space-y-6 min-w-0">
-                {signupsLoading ? (
-                  <div className="flex items-center justify-center py-20">
-                    <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-                  </div>
-                ) : signups.length === 0 ? (
-                  <div className="bg-card border border-border rounded-sm p-12 text-center">
-                    <p className="text-muted-foreground">No ride sign-ups yet</p>
-                  </div>
-                ) : (
-                  Object.entries(signupsGrouped).map(([eventName, eventSignups]) => (
-                    <div key={eventName}>
-                      <div className="flex items-center gap-3 mb-3">
-                        <h2 className="font-display text-sm uppercase tracking-[0.2em] text-primary">{eventName}</h2>
-                        <span className="text-xs text-muted-foreground border border-border rounded-sm px-2 py-0.5">{eventSignups.length} sign-up{eventSignups.length !== 1 ? 's' : ''}</span>
-                      </div>
-                      <div className="space-y-2">
-                        {eventSignups.map(signup => (
-                          <button
-                            key={signup.id}
-                            onClick={() => setSelectedSignup(signup)}
-                            className={`w-full text-left bg-card border rounded-sm p-4 hover:border-primary transition-colors ${selectedSignup?.id === signup.id ? 'border-primary' : 'border-border'}`}
-                          >
-                            <div className="flex items-center justify-between gap-4">
-                              <div className="min-w-0">
-                                <div className="font-display text-sm font-bold uppercase text-foreground truncate">{signup.full_name}</div>
-                                <div className="text-xs text-muted-foreground">{signup.email}</div>
-                                <div className="text-xs text-muted-foreground capitalize">{signup.ride_group} group</div>
-                              </div>
-                              <div className="flex flex-col items-end gap-1 shrink-0 text-xs text-muted-foreground">
-                                {signup.yoga_signup && <span className="text-primary">Yoga</span>}
-                                {signup.lime_bike && <span className="text-primary">Bike Rental</span>}
-                                <span>{new Date(signup.created_at).toLocaleDateString()}</span>
-                              </div>
-                            </div>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Ride signup detail panel */}
-              {selectedSignup && (
-                <div className="w-96 shrink-0 bg-card border border-border rounded-sm p-6 space-y-5 self-start sticky top-6">
-                  <div className="flex items-start justify-between">
-                    <h2 className="font-display text-lg font-bold uppercase text-foreground leading-tight">{selectedSignup.full_name}</h2>
-                    <button onClick={() => setSelectedSignup(null)} className="text-muted-foreground hover:text-foreground text-lg leading-none">×</button>
-                  </div>
-
-                  <div className="space-y-2 text-sm">
-                    <DetailRow label="Email" value={selectedSignup.email} />
-                    <DetailRow label="Phone" value={selectedSignup.phone_number} />
-                    <DetailRow label="Instagram" value={selectedSignup.instagram_handle || '—'} />
-                    <DetailRow label="Ride Group" value={selectedSignup.ride_group} />
-                    <DetailRow label="Yoga Sign-Up" value={selectedSignup.yoga_signup ? 'Yes' : 'No'} />
-                    <DetailRow label="Bike Rental" value={selectedSignup.lime_bike ? 'Yes' : 'No'} />
-                    <DetailRow label="Bike Waiver" value={selectedSignup.bike_rental_waiver_agreed ? 'Agreed' : 'N/A'} />
-                    <DetailRow label="Signed Up" value={new Date(selectedSignup.created_at).toLocaleString()} />
-                  </div>
-
-                  {selectedSignup.driver_license_data && (
-                    <div className="border-t border-border pt-4">
-                      <div className="font-display text-xs uppercase tracking-wider text-muted-foreground mb-2">Driver's License</div>
-                      <img
-                        src={selectedSignup.driver_license_data}
-                        alt="Driver's license"
-                        className="w-full rounded-sm border border-border object-contain max-h-48"
-                      />
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </div>
       </div>
 
