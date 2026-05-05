@@ -126,6 +126,9 @@ export default function RideSignup() {
     onClientUploadComplete: (res) => {
       if (res?.[0]?.url) setLicenseUrl(res[0].url);
     },
+    onUploadError: (error) => {
+      setLicenseError(`Upload failed: ${error.message}`);
+    },
   });
 
   const {
@@ -186,9 +189,14 @@ export default function RideSignup() {
       setLicenseError('');
       // upload license before moving to next step
       if (licenseFile && !licenseUrl) {
-        const uploaded = await startUpload([licenseFile]);
-        if (!uploaded?.[0]?.url) {
-          setLicenseError('Upload failed, please try again');
+        try {
+          const uploaded = await startUpload([licenseFile]);
+          if (!uploaded?.[0]?.url) {
+            setLicenseError('Upload failed, please try again');
+            return;
+          }
+        } catch (err) {
+          setLicenseError(err instanceof Error ? err.message : 'Upload failed, please try again');
           return;
         }
       }

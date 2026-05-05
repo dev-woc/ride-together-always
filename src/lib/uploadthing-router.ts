@@ -9,7 +9,7 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ file }) => {
       console.log('Upload complete:', file.url);
     }),
-  driverLicense: f({ image: { maxFileSize: '10MB', maxFileCount: 1 } })
+  driverLicense: f({ image: { maxFileSize: '10MB', maxFileCount: 1 }, pdf: { maxFileSize: '10MB', maxFileCount: 1 } })
     .middleware(async () => ({}))
     .onUploadComplete(async ({ file }) => {
       console.log('License upload complete:', file.url);
