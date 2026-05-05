@@ -176,30 +176,28 @@ export default function RideSignup() {
 
     // Validate bike rental step manually
     if (bikeStepActive && step === 2) {
-      let ok = true;
-      if (!licenseFile && !licenseUrl) {
-        setLicenseError('Please upload a photo of your driver\'s license');
-        ok = false;
-      }
+      // TODO: re-enable license upload once UploadThing is working
+      // let ok = true;
+      // if (!licenseFile && !licenseUrl) {
+      //   setLicenseError('Please upload a photo of your driver\'s license');
+      //   ok = false;
+      // }
       if (!bikeRentalWaiverAgreed) {
-        ok = false;
         toast.error('You must agree to the bike rental waiver');
+        return;
       }
-      if (!ok) return;
-      setLicenseError('');
-      // upload license before moving to next step
-      if (licenseFile && !licenseUrl) {
-        try {
-          const uploaded = await startUpload([licenseFile]);
-          if (!uploaded?.[0]?.url) {
-            setLicenseError('Upload failed, please try again');
-            return;
-          }
-        } catch (err) {
-          setLicenseError(err instanceof Error ? err.message : 'Upload failed, please try again');
-          return;
-        }
-      }
+      // if (licenseFile && !licenseUrl) {
+      //   try {
+      //     const uploaded = await startUpload([licenseFile]);
+      //     if (!uploaded?.[0]?.url) {
+      //       setLicenseError('Upload failed, please try again');
+      //       return;
+      //     }
+      //   } catch (err) {
+      //     setLicenseError(err instanceof Error ? err.message : 'Upload failed, please try again');
+      //     return;
+      //   }
+      // }
     }
 
     if (valid) setStep((s) => s + 1);
@@ -467,7 +465,7 @@ export default function RideSignup() {
                       Bikes are first come first serve and subject to availability. We'll text you if none are left.
                     </div>
 
-                    {/* Driver's license upload */}
+                    {/* TODO: re-enable once UploadThing is working
                     <div className="space-y-2">
                       <Label className="text-foreground">
                         Driver's License <span className="text-primary">*</span>
@@ -508,6 +506,7 @@ export default function RideSignup() {
                       />
                       {licenseError && <p className="text-destructive text-xs">{licenseError}</p>}
                     </div>
+                    */}
 
                     {/* Rental waiver */}
                     <div className="space-y-3">
