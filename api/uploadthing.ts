@@ -2,16 +2,18 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createRouteHandler } from 'uploadthing/server';
 import { ourFileRouter } from '../src/lib/uploadthing-router.js';
 
+if (!process.env.UPLOADTHING_TOKEN) {
+  console.error('[uploadthing] UPLOADTHING_TOKEN is not set — all uploads will fail');
+}
+
 const handler = createRouteHandler({
   router: ourFileRouter,
-  config: { token: process.env.UPLOADTHING_TOKEN! },
+  config: { token: process.env.UPLOADTHING_TOKEN ?? '' },
 });
 
-// Vercel auto-parses the body before our handler runs, consuming the stream.
-// Re-stringifying req.body can produce a different byte sequence than the
-// original, breaking UploadThing's request signature verification. Instead we
-// buffer the raw bytes ourselves before Vercel touches them by setting
-// bodyParser: false, then forward an unmodified body to UploadThing.
+// bodyParser: false so Vercel does not consume the request stream before we
+// forward the raw bytes to UploadThing. UploadThing verifies the raw body
+// digest, so re-serialising req.body would break signature checks.
 export const config = { api: { bodyParser: false } };
 
 function readRawBody(req: VercelRequest): Promise<Buffer> {
@@ -26,6 +28,11 @@ function readRawBody(req: VercelRequest): Promise<Buffer> {
 }
 
 export default async function (req: VercelRequest, res: VercelResponse) {
+  if (!process.env.UPLOADTHING_TOKEN) {
+    res.status(500).json({ error: 'UPLOADTHING_TOKEN environment variable is not set' });
+    return;
+  }
+
   const url = new URL(req.url ?? '/', `https://${req.headers.host ?? 'localhost'}`);
 
   // Normalise headers: join multi-value arrays, drop undefined entries.
@@ -44,9 +51,19 @@ export default async function (req: VercelRequest, res: VercelResponse) {
     body: rawBody,
   });
 
-  const fetchRes = await handler(fetchReq);
+  try {
+    const fetchRes = await handler(fetchReq);
+    const responseText = await fetchRes.text();
 
-  res.status(fetchRes.status);
-  fetchRes.headers.forEach((value, key) => res.setHeader(key, value));
-  res.send(await fetchRes.text());
+    if (fetchRes.status >= 400) {
+      console.error(`[uploadthing] ${fetchRes.status} response:`, responseText);
+    }
+
+    res.status(fetchRes.status);
+    fetchRes.headers.forEach((value, key) => res.setHeader(key, value));
+    res.send(responseText);
+  } catch (err) {
+    console.error('[uploadthing] handler threw:', err);
+    res.status(500).json({ error: 'Upload handler error' });
+  }
 }
