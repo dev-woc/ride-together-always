@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { useUploadThing } from '@/lib/uploadthing';
+// import { useUploadThing } from '@/lib/uploadthing'; // TODO: re-enable with uploads
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, ChevronRight, ChevronLeft, Bike, Upload, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -122,14 +122,12 @@ export default function RideSignup() {
   const [licenseError, setLicenseError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { startUpload, isUploading } = useUploadThing('driverLicense', {
-    onClientUploadComplete: (res) => {
-      if (res?.[0]?.url) setLicenseUrl(res[0].url);
-    },
-    onUploadError: (error) => {
-      setLicenseError(`Upload failed: ${error.message}`);
-    },
-  });
+  // TODO: re-enable when UploadThing token is configured in Vercel env vars
+  // const { startUpload, isUploading } = useUploadThing('driverLicense', {
+  //   onClientUploadComplete: (res) => { if (res?.[0]?.url) setLicenseUrl(res[0].url); },
+  //   onUploadError: (error) => { setLicenseError(`Upload failed: ${error.message}`); },
+  // });
+  const isUploading = false;
 
   const {
     register,
