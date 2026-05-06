@@ -5,12 +5,32 @@ import { useSiteContent } from '@/lib/site-content';
 export const StayConnected = () => {
   const [form, setForm] = useState({ firstName: '', lastName: '', email: '' });
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
   const { content } = useSiteContent();
   const contact = content.contact;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSent(true);
+    setSubmitting(true);
+    setError('');
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          first_name: form.firstName,
+          last_name: form.lastName,
+          email: form.email,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to subscribe');
+      setSent(true);
+    } catch {
+      setError('Something went wrong. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -26,7 +46,7 @@ export const StayConnected = () => {
         {sent ? (
           <p className="text-foreground text-xl">{contact.stayConnectedSuccessMessage}</p>
         ) : (
-          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 mb-10">
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 mb-4">
             <label htmlFor="sc-first-name" className="sr-only">First Name</label>
             <input
               id="sc-first-name"
@@ -59,14 +79,17 @@ export const StayConnected = () => {
             />
             <button
               type="submit"
-              className="bg-primary text-primary-foreground font-bold uppercase tracking-widest px-8 py-3 hover:opacity-90 transition-opacity text-sm"
+              disabled={submitting}
+              className="bg-primary text-primary-foreground font-bold uppercase tracking-widest px-8 py-3 hover:opacity-90 transition-opacity text-sm disabled:opacity-50"
             >
-              {contact.stayConnectedButtonLabel}
+              {submitting ? 'Saving...' : contact.stayConnectedButtonLabel}
             </button>
           </form>
         )}
 
-        <div className="flex items-center gap-6">
+        {error && <p className="text-destructive text-sm mb-6">{error}</p>}
+
+        <div className="flex items-center gap-6 mt-6">
           <a
             href={contact.instagramUrl}
             target="_blank"

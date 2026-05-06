@@ -19,7 +19,7 @@ import type { CommunityVideo } from "@/types/community-video";
 import type { SiteEvent } from "@/types/events";
 import type { AboutContent, ContactContent, DonateContent, HeroContent, SiteContent } from "@/types/site-content";
 
-type AdminTab = "signups" | "events" | "hero" | "about" | "donate" | "contact" | "community" | "resources";
+type AdminTab = "signups" | "events" | "hero" | "about" | "donate" | "contact" | "community" | "resources" | "newsletter";
 
 type RideSignup = {
   id: string;
@@ -35,6 +35,32 @@ type RideSignup = {
   event_name: string;
   created_at: string;
 };
+
+type NewsletterSubscriber = {
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  created_at: string;
+};
+
+function exportNewsletterCsv(subscribers: NewsletterSubscriber[]) {
+  const headers = ["First Name", "Last Name", "Email", "Subscribed"];
+  const rows = subscribers.map((s) => [
+    `"${s.first_name}"`,
+    `"${s.last_name}"`,
+    `"${s.email}"`,
+    `"${new Date(s.created_at).toLocaleString()}"`,
+  ].join(","));
+  const csv = [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "newsletter-subscribers.csv";
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 function exportSignupsCsv(signups: RideSignup[], label: string) {
   const headers = ["Name", "Email", "Phone", "Instagram", "Event", "Ride Group", "Yoga", "Bike Rental", "Bike Waiver", "Signed Up"];
@@ -252,6 +278,12 @@ export default function Admin() {
   const rideSignupsQuery = useQuery({
     queryKey: ["admin-ride-signups"],
     queryFn: () => apiFetch<{ signups: RideSignup[]; grouped: Record<string, RideSignup[]> }>("/api/admin/ride-signups"),
+    enabled: sessionQuery.data?.authenticated === true,
+  });
+
+  const newsletterQuery = useQuery({
+    queryKey: ["admin-newsletter"],
+    queryFn: () => apiFetch<{ subscribers: NewsletterSubscriber[] }>("/api/admin/newsletter"),
     enabled: sessionQuery.data?.authenticated === true,
   });
 
@@ -590,6 +622,7 @@ export default function Admin() {
 
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as AdminTab)} className="space-y-6">
           <TabsList className="h-auto flex-wrap justify-start gap-2 bg-transparent p-0">
+            <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
             <TabsTrigger value="signups">Ride Sign-Ups</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="hero">Hero</TabsTrigger>
@@ -1566,6 +1599,63 @@ export default function Admin() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="newsletter">
+            {(() => {
+              const subscribers = newsletterQuery.data?.subscribers ?? [];
+              return (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div>
+                      <h2 className="font-display text-xl font-bold uppercase text-foreground">Newsletter Subscribers</h2>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {subscribers.length} subscriber{subscribers.length !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={subscribers.length === 0}
+                      onClick={() => exportNewsletterCsv(subscribers)}
+                      className="font-display uppercase tracking-wider text-xs"
+                    >
+                      <Download size={14} className="mr-2" />
+                      Export CSV
+                    </Button>
+                  </div>
+
+                  {newsletterQuery.isLoading ? (
+                    <div className="flex items-center justify-center py-20">
+                      <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    </div>
+                  ) : subscribers.length === 0 ? (
+                    <div className="bg-card border border-border rounded-sm p-12 text-center">
+                      <p className="text-muted-foreground text-sm">No subscribers yet.</p>
+                    </div>
+                  ) : (
+                    <div className="bg-card border border-border rounded-sm overflow-hidden">
+                      <div className="hidden md:grid grid-cols-[2fr,2fr,3fr,2fr] gap-3 px-4 py-3 border-b border-border bg-muted/50">
+                        {["First Name", "Last Name", "Email", "Subscribed"].map((h) => (
+                          <span key={h} className="font-display text-xs uppercase tracking-wider text-muted-foreground">{h}</span>
+                        ))}
+                      </div>
+                      {subscribers.map((s, i) => (
+                        <div
+                          key={s.id}
+                          className={`grid grid-cols-1 md:grid-cols-[2fr,2fr,3fr,2fr] gap-1 md:gap-3 px-4 py-3 text-sm ${i !== subscribers.length - 1 ? "border-b border-border" : ""}`}
+                        >
+                          <span className="text-foreground font-medium">{s.first_name}</span>
+                          <span className="text-foreground">{s.last_name}</span>
+                          <span className="text-muted-foreground truncate">{s.email}</span>
+                          <span className="text-muted-foreground text-xs">{new Date(s.created_at).toLocaleDateString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
           </TabsContent>
 
           <TabsContent value="contact">
