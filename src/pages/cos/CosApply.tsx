@@ -3,11 +3,14 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { format } from 'date-fns';
 import { useAuth } from '@/context/AuthContext';
 import { useUploadThing } from '@/lib/uploadthing';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
-import { CheckCircle, UploadCloud, X } from 'lucide-react';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CheckCircle, UploadCloud, X, CalendarIcon } from 'lucide-react';
 
 const CHALLENGES = [
   'Anxiety or Stress',
@@ -178,7 +181,40 @@ export default function CosApply() {
                 {errors.gender && <p className="text-destructive text-xs mt-1">{errors.gender.message}</p>}
               </div>
               <Field label="Date of Birth" error={errors.date_of_birth?.message}>
-                <input {...register('date_of_birth')} type="date" className={inputCls(!!errors.date_of_birth)} />
+                <Controller
+                  control={control}
+                  name="date_of_birth"
+                  render={({ field }) => {
+                    const selected = field.value ? new Date(field.value + 'T00:00:00') : undefined;
+                    return (
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className={`w-full flex items-center justify-between ${inputCls(!!errors.date_of_birth)} text-left`}
+                          >
+                            <span className={selected ? 'text-foreground' : 'text-muted-foreground'}>
+                              {selected ? format(selected, 'MMMM d, yyyy') : 'Select your date of birth'}
+                            </span>
+                            <CalendarIcon className="w-4 h-4 text-muted-foreground shrink-0 ml-2" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={selected}
+                            onSelect={(date) => field.onChange(date ? format(date, 'yyyy-MM-dd') : '')}
+                            captionLayout="dropdown"
+                            fromYear={1920}
+                            toYear={new Date().getFullYear() - 10}
+                            defaultMonth={selected ?? new Date(1990, 0)}
+                            initialFocus
+                          />
+                        </PopoverContent>
+                      </Popover>
+                    );
+                  }}
+                />
               </Field>
               <Field label="City, State" error={errors.city_state?.message}>
                 <input {...register('city_state')} className={inputCls(!!errors.city_state)} placeholder="Orlando, FL" />
