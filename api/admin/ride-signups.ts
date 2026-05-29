@@ -16,7 +16,7 @@ export default async function handler(req: Request): Promise<Response> {
     const [rows, events] = await Promise.all([
       sql`
         SELECT id, full_name, email, phone_number, instagram_handle,
-               ride_group, yoga_signup, lime_bike, bike_rental_waiver_agreed,
+               ride_group, yoga_signup, lime_bike, waiver_agreed, bike_rental_waiver_agreed,
                driver_license_data, event_name, created_at
         FROM ride_signups
         ORDER BY event_name ASC, created_at DESC

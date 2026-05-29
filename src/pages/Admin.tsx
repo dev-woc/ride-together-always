@@ -30,6 +30,7 @@ type RideSignup = {
   ride_group: string;
   yoga_signup: boolean;
   lime_bike: boolean;
+  waiver_agreed: boolean;
   bike_rental_waiver_agreed: boolean;
   driver_license_data: string | null;
   event_name: string;
@@ -63,7 +64,7 @@ function exportNewsletterCsv(subscribers: NewsletterSubscriber[]) {
 }
 
 function exportSignupsCsv(signups: RideSignup[], label: string) {
-  const headers = ["Name", "Email", "Phone", "Instagram", "Event", "Ride Group", "Yoga", "Bike Rental", "Bike Waiver", "Signed Up"];
+  const headers = ["Name", "Email", "Phone", "Instagram", "Event", "Ride Group", "Yoga", "Bike Rental", "Waiver Signed", "Bike Waiver", "Signed Up"];
   const rows = signups.map((s) => [
     `"${s.full_name}"`,
     `"${s.email}"`,
@@ -73,6 +74,7 @@ function exportSignupsCsv(signups: RideSignup[], label: string) {
     `"${s.ride_group}"`,
     s.yoga_signup ? "Yes" : "No",
     s.lime_bike ? "Yes" : "No",
+    s.waiver_agreed ? "Yes" : "No",
     s.bike_rental_waiver_agreed ? "Yes" : "No",
     `"${new Date(s.created_at).toLocaleString()}"`,
   ].join(","));
@@ -773,6 +775,7 @@ export default function Admin() {
                             ["Ride Group", selectedSignup.ride_group],
                             ["Yoga", selectedSignup.yoga_signup ? "Yes" : "No"],
                             ["Bike Rental", selectedSignup.lime_bike ? "Yes" : "No"],
+                            ["Waiver Signed", selectedSignup.waiver_agreed ? "Yes" : "No"],
                             ["Bike Waiver", selectedSignup.bike_rental_waiver_agreed ? "Agreed" : "N/A"],
                             ["Signed Up", new Date(selectedSignup.created_at).toLocaleString()],
                           ].map(([label, value]) => (
