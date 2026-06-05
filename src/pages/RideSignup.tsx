@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-// import { useUploadThing } from '@/lib/uploadthing'; // TODO: re-enable with uploads
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, ChevronRight, ChevronLeft, Bike, Upload, X } from 'lucide-react';
+import { CheckCircle, ChevronRight, ChevronLeft, Bike } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -86,15 +85,6 @@ Considering the ongoing COVID-19 pandemic, I agree to the following: I affirm th
 
 I CERTIFY THAT I HAVE READ AND FULLY UNDERSTAND THE CONTENTS OF THIS DOCUMENT. I AM AWARE THAT THIS IS A RELEASE OF LIABILITY AND A BINDING CONTRACT, AND I AM SIGNING IT OF MY OWN FREE WILL.`;
 
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-}
-
 export default function RideSignup() {
   const [searchParams] = useSearchParams();
   const eventName = searchParams.get('event') || 'Bike N Thrive';
@@ -117,17 +107,6 @@ export default function RideSignup() {
   const [step, setStep] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [licenseFile, setLicenseFile] = useState<File | null>(null);
-  const [licenseUrl, setLicenseUrl] = useState<string | null>(null);
-  const [licenseError, setLicenseError] = useState('');
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // TODO: re-enable when UploadThing token is configured in Vercel env vars
-  // const { startUpload, isUploading } = useUploadThing('driverLicense', {
-  //   onClientUploadComplete: (res) => { if (res?.[0]?.url) setLicenseUrl(res[0].url); },
-  //   onUploadError: (error) => { setLicenseError(`Upload failed: ${error.message}`); },
-  // });
-  const isUploading = false;
 
   const {
     register,
@@ -172,44 +151,14 @@ export default function RideSignup() {
     const fields = stepFieldMap[step] ?? [];
     const valid = fields.length ? await trigger(fields) : true;
 
-    // Validate bike rental step manually
     if (bikeStepActive && step === 2) {
-      // TODO: re-enable license upload once UploadThing is working
-      // let ok = true;
-      // if (!licenseFile && !licenseUrl) {
-      //   setLicenseError('Please upload a photo of your driver\'s license');
-      //   ok = false;
-      // }
       if (!bikeRentalWaiverAgreed) {
         toast.error('You must agree to the bike rental waiver');
         return;
       }
-      // if (licenseFile && !licenseUrl) {
-      //   try {
-      //     const uploaded = await startUpload([licenseFile]);
-      //     if (!uploaded?.[0]?.url) {
-      //       setLicenseError('Upload failed, please try again');
-      //       return;
-      //     }
-      //   } catch (err) {
-      //     setLicenseError(err instanceof Error ? err.message : 'Upload failed, please try again');
-      //     return;
-      //   }
-      // }
     }
 
     if (valid) setStep((s) => s + 1);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      setLicenseError('File must be under 10 MB');
-      return;
-    }
-    setLicenseFile(file);
-    setLicenseError('');
   };
 
   const onSubmit = async (data: FormData) => {
@@ -218,7 +167,7 @@ export default function RideSignup() {
       const res = await fetch('/api/ride-signup', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...data, driver_license_data: licenseUrl, event_name: eventName }),
+        body: JSON.stringify({ ...data, event_name: eventName }),
       });
       if (!res.ok) throw new Error('Submission failed');
       setSubmitted(true);
@@ -440,7 +389,7 @@ export default function RideSignup() {
                         </div>
                         {limeBike && (
                           <p className="text-xs text-primary/80 bg-primary/5 border border-primary/20 rounded-lg px-3 py-2">
-                            You'll need to upload your driver's license and agree to the rental waiver on the next step.
+                            You'll need to agree to the rental waiver on the next step.
                           </p>
                         )}
                       </div>
@@ -462,49 +411,6 @@ export default function RideSignup() {
                     <div className="text-xs text-muted-foreground bg-muted/50 border border-border rounded-lg px-3 py-2">
                       Bikes are first come first serve and subject to availability. We'll text you if none are left.
                     </div>
-
-                    {/* TODO: re-enable once UploadThing is working
-                    <div className="space-y-2">
-                      <Label className="text-foreground">
-                        Driver's License <span className="text-primary">*</span>
-                        <span className="block text-muted-foreground text-xs font-normal mt-0.5">Upload a photo. Max 10 MB.</span>
-                      </Label>
-
-                      {licenseFile ? (
-                        <div className="flex items-center justify-between bg-muted border border-primary/30 rounded-lg px-4 py-3">
-                          <div className="flex items-center gap-3 min-w-0">
-                            <CheckCircle className="w-5 h-5 text-primary flex-shrink-0" />
-                            <span className="text-sm text-foreground truncate">{licenseFile.name}</span>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => { setLicenseFile(null); if (fileInputRef.current) fileInputRef.current.value = ''; }}
-                            className="ml-2 text-muted-foreground hover:text-destructive flex-shrink-0"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <button
-                          type="button"
-                          onClick={() => fileInputRef.current?.click()}
-                          className="w-full flex flex-col items-center justify-center gap-2 border-2 border-dashed border-border rounded-lg py-8 px-4 bg-muted hover:border-primary/50 hover:bg-primary/5 transition-all duration-200"
-                        >
-                          <Upload className="w-8 h-8 text-muted-foreground" />
-                          <span className="text-sm text-muted-foreground">Click to upload your driver's license</span>
-                          <span className="text-xs text-muted-foreground">JPG, PNG, PDF — max 10 MB</span>
-                        </button>
-                      )}
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*,.pdf"
-                        className="hidden"
-                        onChange={handleFileChange}
-                      />
-                      {licenseError && <p className="text-destructive text-xs">{licenseError}</p>}
-                    </div>
-                    */}
 
                     {/* Rental waiver */}
                     <div className="space-y-3">
@@ -588,9 +494,9 @@ export default function RideSignup() {
                 ) : <div />}
 
                 {step < totalSteps - 1 ? (
-                  <Button type="button" onClick={handleNext} disabled={isUploading} className="bg-primary hover:bg-primary/90 text-primary-foreground font-display font-bold">
-                    {isUploading ? 'Uploading...' : 'Next'}
-                    {!isUploading && <ChevronRight className="w-4 h-4 ml-1" />}
+                  <Button type="button" onClick={handleNext} className="bg-primary hover:bg-primary/90 text-primary-foreground font-display font-bold">
+                    Next
+                    <ChevronRight className="w-4 h-4 ml-1" />
                   </Button>
                 ) : (
                   <Button type="submit" disabled={submitting} className="bg-primary hover:bg-primary/90 text-primary-foreground font-display font-bold">

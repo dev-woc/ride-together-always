@@ -19,7 +19,39 @@ import type { CommunityVideo } from "@/types/community-video";
 import type { SiteEvent } from "@/types/events";
 import type { AboutContent, ContactContent, DonateContent, HeroContent, SiteContent } from "@/types/site-content";
 
-type AdminTab = "signups" | "events" | "hero" | "about" | "donate" | "contact" | "community" | "resources" | "newsletter";
+type AdminTab = "signups" | "events" | "hero" | "about" | "donate" | "contact" | "community" | "resources" | "newsletter" | "cos-applications";
+
+type CosApplication = {
+  id: string;
+  full_name: string;
+  email: string;
+  phone: string;
+  gender: string | null;
+  date_of_birth: string;
+  city_state: string;
+  prior_therapy: boolean;
+  has_insurance: boolean;
+  current_challenges: string[];
+  mental_health_description: string;
+  therapy_motivation: string;
+  therapy_goals: string;
+  therapy_barriers: string;
+  weekly_commitment: boolean;
+  has_device: boolean;
+  video_documentation: boolean | null;
+  intro_video_url: string | null;
+  status: string;
+  submitted_at: string;
+};
+
+const COS_STATUS_COLORS: Record<string, string> = {
+  pending: "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20",
+  reviewing: "bg-blue-500/10 text-blue-600 border border-blue-500/20",
+  approved: "bg-green-500/10 text-green-600 border border-green-500/20",
+  rejected: "bg-red-500/10 text-red-600 border border-red-500/20",
+};
+
+const COS_STATUSES = ["all", "pending", "reviewing", "approved", "rejected"] as const;
 
 type RideSignup = {
   id: string;
@@ -238,6 +270,8 @@ export default function Admin() {
   const [communityVideoFile, setCommunityVideoFile] = useState<File | null>(null);
   const [selectedSignupId, setSelectedSignupId] = useState<string | null>(null);
   const [signupEventFilter, setSignupEventFilter] = useState<string>("all");
+  const [cosAppFilter, setCosAppFilter] = useState<string>("all");
+  const [selectedCosAppId, setSelectedCosAppId] = useState<string | null>(null);
 
   const sessionQuery = useQuery({
     queryKey: ["admin-session"],
@@ -287,6 +321,28 @@ export default function Admin() {
     queryKey: ["admin-newsletter"],
     queryFn: () => apiFetch<{ subscribers: NewsletterSubscriber[] }>("/api/admin/newsletter"),
     enabled: sessionQuery.data?.authenticated === true,
+  });
+
+  const cosApplicationsQuery = useQuery({
+    queryKey: ["admin-cos-applications", cosAppFilter],
+    queryFn: () =>
+      apiFetch<{ applications: CosApplication[] }>(
+        `/api/admin/cos-applications${cosAppFilter !== "all" ? `?status=${cosAppFilter}` : ""}`
+      ),
+    enabled: sessionQuery.data?.authenticated === true,
+  });
+
+  const updateCosAppMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: string }) =>
+      apiFetch<{ application: { id: string; status: string } }>(`/api/admin/cos-applications?id=${id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ status }),
+      }),
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["admin-cos-applications"] });
+      toast({ title: "Status updated" });
+    },
+    onError: (error: Error) => toast({ title: "Update failed", description: error.message, variant: "destructive" }),
   });
 
   const selectedResource = useMemo(
@@ -626,6 +682,7 @@ export default function Admin() {
           <TabsList className="h-auto flex-wrap justify-start gap-2 bg-transparent p-0">
             <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
             <TabsTrigger value="signups">Ride Sign-Ups</TabsTrigger>
+            <TabsTrigger value="cos-applications">COS Applications</TabsTrigger>
             <TabsTrigger value="events">Events</TabsTrigger>
             <TabsTrigger value="hero">Hero</TabsTrigger>
             <TabsTrigger value="about">About</TabsTrigger>
@@ -1733,6 +1790,172 @@ export default function Admin() {
                 </form>
               </CardContent>
             </Card>
+          </TabsContent>
+          <TabsContent value="cos-applications">
+            {(() => {
+              const apps = cosApplicationsQuery.data?.applications ?? [];
+              const selectedApp = apps.find((a) => a.id === selectedCosAppId) ?? null;
+
+              return (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between flex-wrap gap-4">
+                    <div>
+                      <h2 className="font-display text-xl font-bold uppercase text-foreground">Cycle of Support Applications</h2>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {apps.length} application{apps.length !== 1 ? "s" : ""}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 flex-wrap">
+                    {COS_STATUSES.map((s) => (
+                      <button
+                        key={s}
+                        onClick={() => { setCosAppFilter(s); setSelectedCosAppId(null); }}
+                        className={`font-display text-xs uppercase tracking-wider px-4 py-2 border rounded-sm transition-colors ${
+                          cosAppFilter === s
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "border-border text-muted-foreground hover:text-foreground hover:border-foreground"
+                        }`}
+                      >
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+
+                  <div className="flex gap-6 items-start">
+                    <div className="flex-1 min-w-0">
+                      {cosApplicationsQuery.isLoading ? (
+                        <div className="flex items-center justify-center py-20">
+                          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                        </div>
+                      ) : apps.length === 0 ? (
+                        <div className="bg-card border border-border rounded-sm p-12 text-center">
+                          <p className="text-muted-foreground text-sm">No applications found.</p>
+                        </div>
+                      ) : (
+                        <div className="bg-card border border-border rounded-sm overflow-hidden">
+                          <div className="hidden md:grid grid-cols-[2fr,2fr,1.5fr,1fr,1.5fr] gap-3 px-4 py-3 border-b border-border bg-muted/50">
+                            {["Name", "Email", "Location", "Status", "Submitted"].map((h) => (
+                              <span key={h} className="font-display text-xs uppercase tracking-wider text-muted-foreground">{h}</span>
+                            ))}
+                          </div>
+                          {apps.map((app, i) => (
+                            <button
+                              key={app.id}
+                              onClick={() => setSelectedCosAppId(selectedCosAppId === app.id ? null : app.id)}
+                              className={`w-full text-left transition-colors ${
+                                selectedCosAppId === app.id ? "bg-primary/5 border-l-2 border-l-primary" : "hover:bg-muted/40"
+                              } ${i !== 0 ? "border-t border-border" : ""}`}
+                            >
+                              <div className="hidden md:grid grid-cols-[2fr,2fr,1.5fr,1fr,1.5fr] gap-3 px-4 py-3 items-center">
+                                <span className="font-medium text-sm text-foreground truncate">{app.full_name}</span>
+                                <span className="text-xs text-muted-foreground truncate">{app.email}</span>
+                                <span className="text-xs text-muted-foreground">{app.city_state}</span>
+                                <span className={`text-xs px-2 py-0.5 rounded-sm font-display uppercase tracking-wider ${COS_STATUS_COLORS[app.status] ?? ""}`}>
+                                  {app.status}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {new Date(app.submitted_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                              <div className="md:hidden px-4 py-3">
+                                <div className="flex items-start justify-between gap-2">
+                                  <div>
+                                    <p className="font-medium text-sm text-foreground">{app.full_name}</p>
+                                    <p className="text-xs text-muted-foreground">{app.email}</p>
+                                    <p className="text-xs text-muted-foreground">{app.city_state}</p>
+                                  </div>
+                                  <span className={`text-xs px-2 py-0.5 rounded-sm font-display uppercase tracking-wider shrink-0 ${COS_STATUS_COLORS[app.status] ?? ""}`}>
+                                    {app.status}
+                                  </span>
+                                </div>
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {selectedApp && (
+                      <div className="w-80 shrink-0 bg-card border border-border rounded-sm p-5 space-y-4 self-start sticky top-6">
+                        <div className="flex items-start justify-between">
+                          <h3 className="font-display text-base font-bold uppercase text-foreground leading-tight">{selectedApp.full_name}</h3>
+                          <button onClick={() => setSelectedCosAppId(null)} className="text-muted-foreground hover:text-foreground text-lg leading-none ml-2">×</button>
+                        </div>
+
+                        <div className="space-y-2 text-sm">
+                          {[
+                            ["Email", selectedApp.email],
+                            ["Phone", selectedApp.phone],
+                            ["Gender", selectedApp.gender ?? "—"],
+                            ["DOB", selectedApp.date_of_birth],
+                            ["Location", selectedApp.city_state],
+                            ["Prior Therapy", selectedApp.prior_therapy ? "Yes" : "No"],
+                            ["Insurance", selectedApp.has_insurance ? "Yes" : "No"],
+                            ["Weekly Commit", selectedApp.weekly_commitment ? "Yes" : "No"],
+                            ["Has Device", selectedApp.has_device ? "Yes" : "No"],
+                            ["Video Doc", selectedApp.video_documentation ? "Yes" : selectedApp.video_documentation === false ? "No" : "—"],
+                            ["Challenges", selectedApp.current_challenges?.join(", ") || "—"],
+                          ].map(([label, value]) => (
+                            <div key={label} className="flex justify-between gap-3">
+                              <span className="font-display text-xs uppercase tracking-wider text-muted-foreground whitespace-nowrap">{label}</span>
+                              <span className="text-xs text-foreground text-right">{value}</span>
+                            </div>
+                          ))}
+                        </div>
+
+                        {selectedApp.mental_health_description && (
+                          <div className="border-t border-border pt-3 space-y-1">
+                            <p className="font-display text-xs uppercase tracking-wider text-muted-foreground">Mental Health</p>
+                            <p className="text-xs text-foreground leading-relaxed">{selectedApp.mental_health_description}</p>
+                          </div>
+                        )}
+                        {selectedApp.therapy_motivation && (
+                          <div className="border-t border-border pt-3 space-y-1">
+                            <p className="font-display text-xs uppercase tracking-wider text-muted-foreground">Motivation</p>
+                            <p className="text-xs text-foreground leading-relaxed">{selectedApp.therapy_motivation}</p>
+                          </div>
+                        )}
+                        {selectedApp.therapy_goals && (
+                          <div className="border-t border-border pt-3 space-y-1">
+                            <p className="font-display text-xs uppercase tracking-wider text-muted-foreground">Goals</p>
+                            <p className="text-xs text-foreground leading-relaxed">{selectedApp.therapy_goals}</p>
+                          </div>
+                        )}
+                        {selectedApp.therapy_barriers && (
+                          <div className="border-t border-border pt-3 space-y-1">
+                            <p className="font-display text-xs uppercase tracking-wider text-muted-foreground">Barriers</p>
+                            <p className="text-xs text-foreground leading-relaxed">{selectedApp.therapy_barriers}</p>
+                          </div>
+                        )}
+
+                        {selectedApp.intro_video_url && (
+                          <div className="border-t border-border pt-3">
+                            <p className="font-display text-xs uppercase tracking-wider text-muted-foreground mb-2">Intro Video</p>
+                            <video src={selectedApp.intro_video_url} controls className="w-full rounded-sm border border-border" />
+                          </div>
+                        )}
+
+                        <div className="border-t border-border pt-3">
+                          <label className="block font-display text-xs uppercase tracking-wider text-muted-foreground mb-2">Update Status</label>
+                          <select
+                            value={selectedApp.status}
+                            disabled={updateCosAppMutation.isPending}
+                            onChange={(e) => updateCosAppMutation.mutate({ id: selectedApp.id, status: e.target.value })}
+                            className="w-full bg-background border border-border px-3 py-2 text-sm text-foreground focus:outline-none focus:border-primary rounded-sm disabled:opacity-60"
+                          >
+                            {["pending", "reviewing", "approved", "rejected"].map((s) => (
+                              <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
           </TabsContent>
         </Tabs>
 
