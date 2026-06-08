@@ -23,6 +23,8 @@ type AdminTab = "signups" | "events" | "hero" | "about" | "donate" | "contact" |
 
 type CosApplication = {
   id: string;
+  user_id: string;
+  user_name: string;
   full_name: string;
   email: string;
   phone: string;
@@ -38,10 +40,15 @@ type CosApplication = {
   therapy_barriers: string;
   weekly_commitment: boolean;
   has_device: boolean;
+  testimonial_willing: boolean | null;
   video_documentation: boolean | null;
+  therapist_preference: string | null;
+  preferred_therapist_name: string | null;
+  preferred_therapist_contact: string | null;
   intro_video_url: string | null;
   status: string;
   submitted_at: string;
+  updated_at: string;
 };
 
 const COS_STATUS_COLORS: Record<string, string> = {
@@ -92,6 +99,50 @@ function exportNewsletterCsv(subscribers: NewsletterSubscriber[]) {
   a.href = url;
   a.download = "newsletter-subscribers.csv";
   a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportCosApplicationsCsv(apps: CosApplication[], label: string) {
+  const headers = [
+    "Name", "Email", "Phone", "Gender", "Date of Birth", "City/State",
+    "Prior Therapy", "Has Insurance", "Current Challenges",
+    "Mental Health Description", "Therapy Motivation", "Therapy Goals", "Therapy Barriers",
+    "Weekly Commitment", "Has Device", "Video Documentation", "Testimonial Willing",
+    "Therapist Preference", "Preferred Therapist Name", "Preferred Therapist Contact",
+    "Intro Video URL", "Status", "Submitted",
+  ];
+  const rows = apps.map((a) => [
+    `"${a.full_name}"`,
+    `"${a.email}"`,
+    `"${a.phone}"`,
+    `"${a.gender ?? ""}"`,
+    `"${a.date_of_birth}"`,
+    `"${a.city_state}"`,
+    a.prior_therapy ? "Yes" : "No",
+    a.has_insurance ? "Yes" : "No",
+    `"${(a.current_challenges ?? []).join("; ")}"`,
+    `"${(a.mental_health_description ?? "").replace(/"/g, '""')}"`,
+    `"${(a.therapy_motivation ?? "").replace(/"/g, '""')}"`,
+    `"${(a.therapy_goals ?? "").replace(/"/g, '""')}"`,
+    `"${(a.therapy_barriers ?? "").replace(/"/g, '""')}"`,
+    a.weekly_commitment ? "Yes" : "No",
+    a.has_device ? "Yes" : "No",
+    a.video_documentation == null ? "" : a.video_documentation ? "Yes" : "No",
+    a.testimonial_willing == null ? "" : a.testimonial_willing ? "Yes" : "No",
+    `"${a.therapist_preference ?? ""}"`,
+    `"${a.preferred_therapist_name ?? ""}"`,
+    `"${a.preferred_therapist_contact ?? ""}"`,
+    `"${a.intro_video_url ?? ""}"`,
+    `"${a.status}"`,
+    `"${new Date(a.submitted_at).toLocaleString()}"`,
+  ].join(","));
+  const csv = [headers.join(","), ...rows].join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `cos-applications-${label}.csv`;
+  anchor.click();
   URL.revokeObjectURL(url);
 }
 
@@ -1805,6 +1856,16 @@ export default function Admin() {
                         {apps.length} application{apps.length !== 1 ? "s" : ""}
                       </p>
                     </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={apps.length === 0}
+                      onClick={() => exportCosApplicationsCsv(apps, cosAppFilter === "all" ? "all" : cosAppFilter)}
+                      className="font-display uppercase tracking-wider text-xs"
+                    >
+                      <Download size={14} className="mr-2" />
+                      Export CSV
+                    </Button>
                   </div>
 
                   <div className="flex gap-2 flex-wrap">
@@ -1885,7 +1946,7 @@ export default function Admin() {
                         </div>
 
                         <div className="space-y-2 text-sm">
-                          {[
+                          {([
                             ["Email", selectedApp.email],
                             ["Phone", selectedApp.phone],
                             ["Gender", selectedApp.gender ?? "—"],
@@ -1895,9 +1956,13 @@ export default function Admin() {
                             ["Insurance", selectedApp.has_insurance ? "Yes" : "No"],
                             ["Weekly Commit", selectedApp.weekly_commitment ? "Yes" : "No"],
                             ["Has Device", selectedApp.has_device ? "Yes" : "No"],
-                            ["Video Doc", selectedApp.video_documentation ? "Yes" : selectedApp.video_documentation === false ? "No" : "—"],
+                            ["Video Doc", selectedApp.video_documentation == null ? "—" : selectedApp.video_documentation ? "Yes" : "No"],
+                            ["Testimonial", selectedApp.testimonial_willing == null ? "—" : selectedApp.testimonial_willing ? "Yes" : "No"],
+                            ["Therapist Pref", selectedApp.therapist_preference || "—"],
+                            ["Pref. Therapist", selectedApp.preferred_therapist_name || "—"],
+                            ["Therapist Contact", selectedApp.preferred_therapist_contact || "—"],
                             ["Challenges", selectedApp.current_challenges?.join(", ") || "—"],
-                          ].map(([label, value]) => (
+                          ] as [string, string][]).map(([label, value]) => (
                             <div key={label} className="flex justify-between gap-3">
                               <span className="font-display text-xs uppercase tracking-wider text-muted-foreground whitespace-nowrap">{label}</span>
                               <span className="text-xs text-foreground text-right">{value}</span>
