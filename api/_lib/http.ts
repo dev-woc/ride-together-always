@@ -1,6 +1,10 @@
 export const jsonHeaders = {
   "Content-Type": "application/json",
-  "Cache-Control": "no-store",
+  "Cache-Control": "no-store, no-cache, must-revalidate, private",
+  "Pragma": "no-cache",
+  "X-Content-Type-Options": "nosniff",
+  "X-Frame-Options": "DENY",
+  "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
 };
 
 export function json(data: unknown, init?: ResponseInit) {

@@ -20,7 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const token = await new SignJWT({ id: user.id, email: user.email, name: user.name, role: user.role })
     .setProtectedHeader({ alg: 'HS256' })
-    .setExpirationTime('7d')
+    .setExpirationTime('24h')
     .sign(secret);
 
   return res.status(200).json({ token, user: { id: user.id, email: user.email, name: user.name, role: user.role } });

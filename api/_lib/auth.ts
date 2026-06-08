@@ -1,7 +1,7 @@
 import { badRequest, unauthorized } from "./http";
 
 const SESSION_COOKIE = "admin_session";
-const SESSION_TTL_MS = 1000 * 60 * 60 * 12;
+const SESSION_TTL_MS = 1000 * 60 * 60 * 8; // 8 hours — HIPAA requires short-lived sessions
 
 function getSessionSecret() {
   return process.env.ADMIN_SESSION_SECRET || process.env.JWT_SECRET || "";
@@ -106,6 +106,20 @@ export async function requireAdmin(req: Request) {
   }
 
   return null;
+}
+
+// Constant-time string comparison to prevent timing attacks on password checks
+export function timingSafeStringEqual(a: string, b: string): boolean {
+  const enc = new TextEncoder();
+  const aBytes = enc.encode(a);
+  const bBytes = enc.encode(b);
+  // Always iterate the longer length so duration doesn't leak which is shorter
+  const len = Math.max(aBytes.length, bBytes.length);
+  let diff = aBytes.length ^ bBytes.length;
+  for (let i = 0; i < len; i++) {
+    diff |= (aBytes[i] ?? 0) ^ (bBytes[i] ?? 0);
+  }
+  return diff === 0;
 }
 
 export async function parseAdminLogin(req: Request) {

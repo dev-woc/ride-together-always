@@ -1,4 +1,5 @@
 import { requireAdmin } from "../_lib/auth";
+import { logPhiAccess, getClientIp } from "../_lib/audit";
 import { sql } from "../_lib/db";
 import { json, methodNotAllowed, badRequest, serverError } from "../_lib/http";
 
@@ -11,6 +12,9 @@ export default async function handler(req: Request): Promise<Response> {
   const url = new URL(req.url);
   const status = url.searchParams.get("status");
   const id = url.searchParams.get("id");
+
+  const ip = getClientIp(req);
+  const ua = req.headers.get("user-agent") ?? undefined;
 
   if (req.method === "GET") {
     try {
@@ -29,6 +33,16 @@ export default async function handler(req: Request): Promise<Response> {
               JOIN cos_users u ON a.user_id = u.id
               ORDER BY a.submitted_at DESC
             `;
+
+      logPhiAccess({
+        accessorType: "admin_session",
+        accessorId: "admin",
+        action: "view_applications_list",
+        resourceType: "cos_application",
+        ipAddress: ip,
+        userAgent: ua,
+      });
+
       return json({ applications: apps });
     } catch (error) {
       console.error("COS applications fetch failed", error);
@@ -49,6 +63,17 @@ export default async function handler(req: Request): Promise<Response> {
         WHERE id = ${id}
         RETURNING id, status
       `;
+
+      logPhiAccess({
+        accessorType: "admin_session",
+        accessorId: "admin",
+        action: "update_application_status",
+        resourceType: "cos_application",
+        resourceId: id,
+        ipAddress: ip,
+        userAgent: ua,
+      });
+
       return json({ application: app });
     } catch (error) {
       console.error("COS application update failed", error);

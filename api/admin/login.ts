@@ -1,4 +1,4 @@
-import { createSessionCookie, getAdminPassword, parseAdminLogin } from "../_lib/auth";
+import { createSessionCookie, getAdminPassword, parseAdminLogin, timingSafeStringEqual } from "../_lib/auth";
 import { json, methodNotAllowed, serverError, unauthorized } from "../_lib/http";
 
 export const config = { runtime: "edge" };
@@ -21,7 +21,7 @@ export default async function handler(req: Request): Promise<Response> {
       return serverError("ADMIN_PASSWORD is not configured");
     }
 
-    if (parsed.password !== configuredPassword) {
+    if (!timingSafeStringEqual(parsed.password, configuredPassword)) {
       return unauthorized("Invalid password");
     }
 

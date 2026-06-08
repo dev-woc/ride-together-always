@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { neon } from '@neondatabase/serverless';
 import { jwtVerify } from 'jose';
+import { logPhiAccess } from '../_lib/audit';
 
 const sql = neon(process.env.DATABASE_URL!);
 const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
@@ -16,12 +17,35 @@ async function getUserFromRequest(req: VercelRequest) {
   }
 }
 
+function getClientIp(req: VercelRequest): string | undefined {
+  const fwd = req.headers['x-forwarded-for'];
+  if (Array.isArray(fwd)) return fwd[0];
+  return fwd?.split(',')[0].trim() ?? undefined;
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const user = await getUserFromRequest(req);
   if (!user) return res.status(401).json({ error: 'Unauthorized' });
 
+  const ip = getClientIp(req);
+  const ua = Array.isArray(req.headers['user-agent'])
+    ? req.headers['user-agent'][0]
+    : req.headers['user-agent'];
+
   if (req.method === 'GET') {
     const [app] = await sql`SELECT * FROM cos_applications WHERE user_id = ${user.id} LIMIT 1`;
+
+    logPhiAccess({
+      accessorType: 'cos_user',
+      accessorId: user.id,
+      accessorEmail: user.email,
+      action: 'view_application',
+      resourceType: 'cos_application',
+      resourceId: (app as { id?: string } | undefined)?.id,
+      ipAddress: ip,
+      userAgent: ua,
+    });
+
     return res.status(200).json({ application: app ?? null });
   }
 
@@ -60,6 +84,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         ${intro_video_url ?? null}
       ) RETURNING *
     `;
+
+    logPhiAccess({
+      accessorType: 'cos_user',
+      accessorId: user.id,
+      accessorEmail: user.email,
+      action: 'submit_application',
+      resourceType: 'cos_application',
+      resourceId: (app as { id?: string } | undefined)?.id,
+      ipAddress: ip,
+      userAgent: ua,
+    });
 
     return res.status(201).json({ application: app });
   }
