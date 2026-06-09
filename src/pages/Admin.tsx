@@ -227,6 +227,7 @@ type EventFormValues = {
   sort_order: string;
   show_yoga: boolean;
   show_bike_rental: boolean;
+  signups_open: boolean;
 };
 
 const emptyEventForm: EventFormValues = {
@@ -240,6 +241,7 @@ const emptyEventForm: EventFormValues = {
   sort_order: "0",
   show_yoga: false,
   show_bike_rental: false,
+  signups_open: true,
 };
 
 async function apiFetch<T>(input: RequestInfo, init?: RequestInit): Promise<T> {
@@ -280,6 +282,7 @@ function toEventPayload(form: EventFormValues) {
     sort_order: Number(form.sort_order) || 0,
     show_yoga: form.show_yoga,
     show_bike_rental: form.show_bike_rental,
+    signups_open: form.signups_open,
   };
 }
 
@@ -299,6 +302,7 @@ function toEventFormValues(event: SiteEvent | null): EventFormValues {
     sort_order: String(event.sort_order ?? 0),
     show_yoga: event.show_yoga ?? false,
     show_bike_rental: event.show_bike_rental ?? false,
+    signups_open: event.signups_open ?? true,
   };
 }
 
@@ -1121,6 +1125,21 @@ export default function Admin() {
                             return { ...updated, signup_link: current.signup_link === prevAuto ? newAuto : current.signup_link };
                           })
                         }
+                      />
+                    </div>
+
+                    <div className={`flex items-center justify-between rounded-sm border px-4 py-3 ${eventForm.signups_open ? "border-border" : "border-destructive/40 bg-destructive/5"}`}>
+                      <div>
+                        <p className="font-medium text-foreground">Signups open</p>
+                        <p className="text-sm text-muted-foreground">
+                          {eventForm.signups_open
+                            ? "Accepting new RSVPs — toggle off to close registration."
+                            : "Registration is closed. The signup form will show a closed message."}
+                        </p>
+                      </div>
+                      <Switch
+                        checked={eventForm.signups_open}
+                        onCheckedChange={(checked) => setEventForm((current) => ({ ...current, signups_open: checked }))}
                       />
                     </div>
 

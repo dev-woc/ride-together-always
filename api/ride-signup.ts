@@ -54,11 +54,26 @@ export default async function handler(req: Request): Promise<Response> {
 
   try {
     const sql = neon(process.env.DATABASE_URL!);
+
+    // Check if signups are open for this event
+    const resolvedEventName = event_name ?? 'Bike N Thrive';
+    const [event] = await sql`
+      SELECT signups_open FROM events
+      WHERE LOWER(title) = LOWER(${resolvedEventName})
+      LIMIT 1
+    `;
+    if (event && event.signups_open === false) {
+      return new Response(JSON.stringify({ error: 'Signups are closed for this event' }), {
+        status: 409,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
     // ensure event_name column exists
     await sql`ALTER TABLE ride_signups ADD COLUMN IF NOT EXISTS event_name TEXT NOT NULL DEFAULT 'Bike N Thrive'`;
     await sql`
       INSERT INTO ride_signups (email, full_name, phone_number, instagram_handle, ride_group, waiver_agreed, yoga_signup, lime_bike, driver_license_data, bike_rental_waiver_agreed, event_name)
-      VALUES (${email}, ${full_name}, ${phone_number}, ${instagram_handle ?? null}, ${ride_group}, ${waiver_agreed}, ${yoga_signup}, ${lime_bike}, ${driver_license_data ?? null}, ${bike_rental_waiver_agreed ?? false}, ${event_name ?? 'Bike N Thrive'})
+      VALUES (${email}, ${full_name}, ${phone_number}, ${instagram_handle ?? null}, ${ride_group}, ${waiver_agreed}, ${yoga_signup}, ${lime_bike}, ${driver_license_data ?? null}, ${bike_rental_waiver_agreed ?? false}, ${resolvedEventName})
     `;
 
     return new Response(JSON.stringify({ success: true }), {

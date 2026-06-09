@@ -91,6 +91,7 @@ export default function RideSignup() {
   const showYoga = searchParams.get('yoga') === '1';
   const showBikeRental = searchParams.get('bikes') === '1';
   const [eventMeta, setEventMeta] = useState<{ date_label: string; time_label: string; location: string } | null>(null);
+  const [signupsClosed, setSignupsClosed] = useState(false);
 
   useEffect(() => {
     fetch('/api/events')
@@ -99,7 +100,10 @@ export default function RideSignup() {
         const match = (data.events ?? []).find(
           (e: { title: string }) => e.title.toLowerCase() === eventName.toLowerCase()
         );
-        if (match) setEventMeta({ date_label: match.date_label, time_label: match.time_label, location: match.location });
+        if (match) {
+          setEventMeta({ date_label: match.date_label, time_label: match.time_label, location: match.location });
+          if (match.signups_open === false) setSignupsClosed(true);
+        }
       })
       .catch(() => {});
   }, [eventName]);
@@ -169,6 +173,10 @@ export default function RideSignup() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...data, event_name: eventName }),
       });
+      if (res.status === 409) {
+        setSignupsClosed(true);
+        return;
+      }
       if (!res.ok) throw new Error('Submission failed');
       setSubmitted(true);
     } catch {
@@ -177,6 +185,34 @@ export default function RideSignup() {
       setSubmitting(false);
     }
   };
+
+  if (signupsClosed) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="flex items-center justify-center min-h-screen pt-24 pb-16 px-4">
+          <div className="text-center max-w-md">
+            <div className="flex justify-center mb-6">
+              <div className="p-4 rounded-full bg-muted border border-border">
+                <Bike className="w-12 h-12 text-muted-foreground" />
+              </div>
+            </div>
+            <h1 className="font-display text-4xl font-bold text-foreground mb-4">REGISTRATION CLOSED</h1>
+            <p className="text-muted-foreground text-lg mb-2">
+              Signups for <span className="text-foreground font-medium">{eventName}</span> are no longer open.
+            </p>
+            {eventMeta && (
+              <p className="text-muted-foreground text-sm mb-8">{eventMeta.date_label} · {eventMeta.time_label}</p>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Follow us on Instagram or check back soon for future events.
+            </p>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   if (submitted) {
     return (

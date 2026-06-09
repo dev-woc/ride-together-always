@@ -10,6 +10,7 @@ export type SiteEvent = {
   sort_order: number;
   show_yoga: boolean;
   show_bike_rental: boolean;
+  signups_open: boolean;
   created_at?: string;
   updated_at?: string;
 };

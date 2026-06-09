@@ -12,6 +12,7 @@ const eventInputSchema = z.object({
   sort_order: z.number().int().default(0),
   show_yoga: z.boolean().default(false),
   show_bike_rental: z.boolean().default(false),
+  signups_open: z.boolean().default(true),
 });
 
 export type EventInput = z.infer<typeof eventInputSchema>;
@@ -21,6 +22,7 @@ export async function listEvents() {
 
   await sql`ALTER TABLE events ADD COLUMN IF NOT EXISTS show_yoga BOOLEAN NOT NULL DEFAULT FALSE`;
   await sql`ALTER TABLE events ADD COLUMN IF NOT EXISTS show_bike_rental BOOLEAN NOT NULL DEFAULT FALSE`;
+  await sql`ALTER TABLE events ADD COLUMN IF NOT EXISTS signups_open BOOLEAN NOT NULL DEFAULT TRUE`;
 
   const rows = await sql`
     SELECT
@@ -35,6 +37,7 @@ export async function listEvents() {
       sort_order,
       show_yoga,
       show_bike_rental,
+      signups_open,
       created_at,
       updated_at
     FROM events
@@ -62,7 +65,8 @@ export async function createEvent(input: EventInput) {
       signup_link,
       sort_order,
       show_yoga,
-      show_bike_rental
+      show_bike_rental,
+      signups_open
     )
     VALUES (
       ${input.title},
@@ -74,7 +78,8 @@ export async function createEvent(input: EventInput) {
       ${input.signup_link || null},
       ${input.sort_order},
       ${input.show_yoga},
-      ${input.show_bike_rental}
+      ${input.show_bike_rental},
+      ${input.signups_open}
     )
     RETURNING
       id,
@@ -88,6 +93,7 @@ export async function createEvent(input: EventInput) {
       sort_order,
       show_yoga,
       show_bike_rental,
+      signups_open,
       created_at,
       updated_at
   `;
@@ -111,6 +117,7 @@ export async function updateEvent(id: string, input: EventInput) {
       sort_order = ${input.sort_order},
       show_yoga = ${input.show_yoga},
       show_bike_rental = ${input.show_bike_rental},
+      signups_open = ${input.signups_open},
       updated_at = NOW()
     WHERE id = ${id}
     RETURNING
@@ -125,6 +132,7 @@ export async function updateEvent(id: string, input: EventInput) {
       sort_order,
       show_yoga,
       show_bike_rental,
+      signups_open,
       created_at,
       updated_at
   `;
