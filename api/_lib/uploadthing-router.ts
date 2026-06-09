@@ -44,6 +44,11 @@ export const ourFileRouter = {
     .onUploadComplete(async ({ file }) => {
       console.log('Community video upload complete:', file.url);
     }),
+  communitySubmission: f({ video: { maxFileSize: '256MB', maxFileCount: 1 } })
+    .middleware(async () => ({}))
+    .onUploadComplete(async ({ file }) => {
+      console.log('Community submission upload complete:', file.url);
+    }),
 } satisfies FileRouter;
 
 export type OurFileRouter = typeof ourFileRouter;
