@@ -25,22 +25,33 @@ export const CommunityVideos = () => {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [submitted, setSubmitted] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
   const { startUpload, isUploading } = useUploadThing('communitySubmission', {
     onUploadProgress: (p) => setUploadProgress(p),
   });
 
+  const isWorking = isUploading || saving;
+
+  // Upload phase: 0–95 from UploadThing. Save phase: 95–100 once we hit the API.
+  const displayProgress = saving ? 98 : uploadProgress;
+  const statusLabel = saving
+    ? 'Saving to community…'
+    : `Uploading… ${uploadProgress}%`;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!videoFile) { setError('Please select a video file.'); return; }
     setError('');
+    setUploadProgress(0);
 
     try {
       const uploaded = await startUpload([videoFile]);
       const file = uploaded?.[0];
       if (!file) throw new Error('Upload failed — no file returned.');
 
+      setSaving(true);
       const url = (file as { ufsUrl?: string; url: string }).ufsUrl ?? file.url;
 
       const res = await fetch('/api/community-videos', {
@@ -52,9 +63,12 @@ export const CommunityVideos = () => {
 
       await queryClient.invalidateQueries({ queryKey: ['community-videos'] });
       await refetch();
+      setUploadProgress(100);
       setSubmitted(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -207,16 +221,16 @@ export const CommunityVideos = () => {
                   )}
                 </div>
 
-                {isUploading && (
-                  <div className="space-y-1">
-                    <div className="flex justify-between text-xs text-muted-foreground">
-                      <span>Uploading…</span>
-                      <span>{uploadProgress}%</span>
+                {isWorking && (
+                  <div className="space-y-2 py-1">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-foreground font-medium">{statusLabel}</span>
+                      <span className="text-primary font-bold tabular-nums">{displayProgress}%</span>
                     </div>
-                    <div className="w-full bg-muted rounded-full h-1.5">
+                    <div className="w-full bg-muted rounded-full h-2.5 overflow-hidden">
                       <div
-                        className="bg-primary h-1.5 rounded-full transition-all duration-300"
-                        style={{ width: `${uploadProgress}%` }}
+                        className="bg-primary h-2.5 rounded-full transition-all duration-500 ease-out"
+                        style={{ width: `${displayProgress}%` }}
                       />
                     </div>
                   </div>
@@ -228,10 +242,10 @@ export const CommunityVideos = () => {
 
                 <button
                   type="submit"
-                  disabled={isUploading || !videoFile}
+                  disabled={isWorking || !videoFile}
                   className="w-full bg-primary text-primary-foreground font-display text-sm uppercase tracking-wider py-3 hover:bg-primary/90 transition-colors disabled:opacity-60 rounded-sm"
                 >
-                  {isUploading ? `Uploading… ${uploadProgress}%` : 'Submit Video'}
+                  {isWorking ? statusLabel : 'Submit Video'}
                 </button>
               </form>
             </div>
