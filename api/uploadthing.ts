@@ -2,19 +2,18 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createRouteHandler } from 'uploadthing/server';
 import { ourFileRouter } from '../src/lib/uploadthing-router.js';
 
-if (!process.env.UPLOADTHING_TOKEN) {
-  console.error('[uploadthing] UPLOADTHING_TOKEN is not set — all uploads will fail');
-}
-
-const handler = createRouteHandler({
-  router: ourFileRouter,
-  config: { token: process.env.UPLOADTHING_TOKEN ?? '' },
-});
-
-// bodyParser: false so Vercel does not consume the request stream before we
-// forward the raw bytes to UploadThing. UploadThing verifies the raw body
-// digest, so re-serialising req.body would break signature checks.
 export const config = { api: { bodyParser: false } };
+
+let _handler: ((req: Request) => Promise<Response>) | null = null;
+
+function getHandler() {
+  if (!_handler) {
+    const token = process.env.UPLOADTHING_TOKEN;
+    if (!token) throw new Error('UPLOADTHING_TOKEN is not set');
+    _handler = createRouteHandler({ router: ourFileRouter, config: { token } });
+  }
+  return _handler;
+}
 
 function readRawBody(req: VercelRequest): Promise<Buffer> {
   return new Promise((resolve, reject) => {
@@ -27,43 +26,45 @@ function readRawBody(req: VercelRequest): Promise<Buffer> {
   });
 }
 
-export default async function (req: VercelRequest, res: VercelResponse) {
-  if (!process.env.UPLOADTHING_TOKEN) {
-    res.status(500).json({ error: 'UPLOADTHING_TOKEN environment variable is not set' });
-    return;
-  }
-
-  const url = new URL(req.url ?? '/', `https://${req.headers.host ?? 'localhost'}`);
-
-  // Normalise headers: join multi-value arrays, drop undefined entries.
-  const headers: Record<string, string> = {};
-  for (const [key, value] of Object.entries(req.headers)) {
-    if (value === undefined) continue;
-    headers[key] = Array.isArray(value) ? value.join(', ') : value;
-  }
-
-  const hasBody = ['POST', 'PUT', 'PATCH'].includes(req.method ?? '');
-  const rawBody = hasBody ? await readRawBody(req) : undefined;
-
-  const fetchReq = new Request(url.toString(), {
-    method: req.method ?? 'GET',
-    headers,
-    body: rawBody,
-  });
-
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
-    const fetchRes = await handler(fetchReq);
-    const responseText = await fetchRes.text();
+    const utHandler = getHandler();
 
-    if (fetchRes.status >= 400) {
-      console.error(`[uploadthing] ${fetchRes.status} response:`, responseText);
+    const proto = (req.headers['x-forwarded-proto'] as string) ?? 'https';
+    const host = req.headers.host ?? 'localhost';
+    const url = `${proto}://${host}${req.url ?? '/api/uploadthing'}`;
+
+    const headers: Record<string, string> = {};
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (value === undefined) continue;
+      headers[key] = Array.isArray(value) ? value.join(', ') : value;
     }
 
-    res.status(fetchRes.status);
-    fetchRes.headers.forEach((value, key) => res.setHeader(key, value));
-    res.send(responseText);
+    const hasBody = ['POST', 'PUT', 'PATCH'].includes(req.method ?? '');
+    const body = hasBody ? await readRawBody(req) : undefined;
+
+    const fetchReq = new Request(url, { method: req.method ?? 'GET', headers, body });
+    const fetchRes = await utHandler(fetchReq);
+    const text = await fetchRes.text();
+
+    if (fetchRes.status >= 400) {
+      console.error(`[uploadthing] ${fetchRes.status}:`, text);
+    }
+
+    // Only forward safe headers — avoid forwarding Transfer-Encoding or other
+    // headers that can conflict with Vercel's Node.js HTTP response handling.
+    const forwardHeaders = ['content-type', 'cache-control', 'x-uploadthing-version'];
+    for (const name of forwardHeaders) {
+      const val = fetchRes.headers.get(name);
+      if (val) res.setHeader(name, val);
+    }
+
+    res.status(fetchRes.status).send(text);
   } catch (err) {
-    console.error('[uploadthing] handler threw:', err);
-    res.status(500).json({ error: 'Upload handler error' });
+    const message = err instanceof Error ? err.message : String(err);
+    console.error('[uploadthing] error:', message);
+    if (!res.headersSent) {
+      res.status(500).json({ error: message });
+    }
   }
 }
