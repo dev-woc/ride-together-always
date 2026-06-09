@@ -11,6 +11,7 @@ export const Hero = () => {
     <section id="home" className="relative w-full h-screen overflow-hidden bg-black">
       {/* Full-bleed background video */}
       <video
+        key={hero.heroVideoUrl ?? 'default'}
         autoPlay
         muted
         loop
@@ -18,7 +19,7 @@ export const Hero = () => {
         poster={heroImage}
         className="absolute inset-0 w-full h-full object-cover"
       >
-        <source src="/hero-video.mp4" type="video/mp4" />
+        <source src={hero.heroVideoUrl ?? '/hero-video.mp4'} type="video/mp4" />
       </video>
 
       {/* Dark gradient overlay */}

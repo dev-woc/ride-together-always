@@ -321,6 +321,8 @@ export default function Admin() {
   const [resourceForm, setResourceForm] = useState<ResourceFormValues>(emptyResourceForm);
   const [communityPhotoForm, setCommunityPhotoForm] = useState<CommunityPhotoFormValues>(emptyCommunityPhotoForm);
   const [communityPhotoFile, setCommunityPhotoFile] = useState<File | null>(null);
+  const [heroVideoFile, setHeroVideoFile] = useState<File | null>(null);
+  const [heroVideoUploading, setHeroVideoUploading] = useState(false);
   const [communityVideoForm, setCommunityVideoForm] = useState<CommunityVideoFormValues>(emptyCommunityVideoForm);
   const [communityVideoFile, setCommunityVideoFile] = useState<File | null>(null);
   const [selectedSignupId, setSelectedSignupId] = useState<string | null>(null);
@@ -1227,6 +1229,81 @@ export default function Admin() {
                     <Button type="button" variant="outline" onClick={() => setHeroForm((siteContentQuery.data || defaultSiteContent).hero)}>Reset</Button>
                   </div>
                 </form>
+              </CardContent>
+            </Card>
+
+            <Card className="mt-6">
+              <CardHeader>
+                <CardTitle className="font-display uppercase">Hero Background Video</CardTitle>
+                <CardDescription>Replace the full-screen background video on the homepage. MP4 recommended, max 512 MB.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {heroForm.heroVideoUrl && (
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium text-foreground">Current video</p>
+                    <video
+                      src={heroForm.heroVideoUrl}
+                      controls
+                      muted
+                      preload="metadata"
+                      className="w-full max-h-48 rounded-sm border border-border object-contain bg-muted"
+                    />
+                  </div>
+                )}
+                {!heroForm.heroVideoUrl && (
+                  <p className="text-sm text-muted-foreground">
+                    Using default bundled video (<code className="bg-muted px-1 rounded text-xs">/hero-video.mp4</code>).
+                  </p>
+                )}
+                <div className="space-y-2">
+                  <Label htmlFor="hero-video-file">Upload new video</Label>
+                  <Input
+                    id="hero-video-file"
+                    type="file"
+                    accept="video/mp4,video/quicktime,video/webm"
+                    onChange={(e) => setHeroVideoFile(e.target.files?.[0] ?? null)}
+                  />
+                </div>
+                <div className="flex gap-3">
+                  <Button
+                    type="button"
+                    disabled={!heroVideoFile || heroVideoUploading}
+                    onClick={async () => {
+                      if (!heroVideoFile) return;
+                      setHeroVideoUploading(true);
+                      try {
+                        const uploaded = await uploadFiles("heroVideo", { files: [heroVideoFile] });
+                        const url = uploaded[0]?.ufsUrl || uploaded[0]?.url;
+                        if (!url) throw new Error("No URL returned");
+                        const updated = { ...heroForm, heroVideoUrl: url };
+                        setHeroForm(updated);
+                        await saveSiteContentMutation.mutateAsync({ key: "hero", value: updated });
+                        setHeroVideoFile(null);
+                        toast({ title: "Hero video updated" });
+                      } catch (err) {
+                        toast({ title: "Upload failed", description: (err as Error).message, variant: "destructive" });
+                      } finally {
+                        setHeroVideoUploading(false);
+                      }
+                    }}
+                  >
+                    {heroVideoUploading ? "Uploading…" : "Upload & Save"}
+                  </Button>
+                  {heroForm.heroVideoUrl && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={async () => {
+                        const updated = { ...heroForm, heroVideoUrl: undefined };
+                        setHeroForm(updated);
+                        await saveSiteContentMutation.mutateAsync({ key: "hero", value: updated });
+                        toast({ title: "Reverted to default video" });
+                      }}
+                    >
+                      Revert to default
+                    </Button>
+                  )}
+                </div>
               </CardContent>
             </Card>
           </TabsContent>

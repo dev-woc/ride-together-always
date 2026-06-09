@@ -4,6 +4,16 @@ import { isAdminAuthenticated } from './auth';
 const f = createUploadthing();
 
 export const ourFileRouter = {
+  heroVideo: f({ video: { maxFileSize: '512MB', maxFileCount: 1 } })
+    .middleware(async ({ req }) => {
+      if (!(await isAdminAuthenticated(req))) {
+        throw new UploadThingError('Unauthorized');
+      }
+      return {};
+    })
+    .onUploadComplete(async ({ file }) => {
+      console.log('Hero video upload complete:', file.url);
+    }),
   introVideo: f({ video: { maxFileSize: '32MB', maxFileCount: 1 } })
     .middleware(async () => ({}))
     .onUploadComplete(async ({ file }) => {

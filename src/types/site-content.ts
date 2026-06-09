@@ -7,6 +7,7 @@ export type HeroContent = {
   primaryCtaHref: string;
   secondaryCtaLabel: string;
   secondaryCtaHref: string;
+  heroVideoUrl?: string;
 };
 
 export type AboutStat = {
