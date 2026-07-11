@@ -3,12 +3,13 @@ import { useSearchParams } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 
-type Tab = 'privacy' | 'terms' | 'nondiscrimination';
+type Tab = 'privacy' | 'terms' | 'nondiscrimination' | 'mental-health';
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'privacy', label: 'Privacy Policy' },
   { id: 'terms', label: 'Terms of Use' },
   { id: 'nondiscrimination', label: 'Nondiscrimination' },
+  { id: 'mental-health', label: 'Mental Health Disclosure' },
 ];
 
 const Legal = () => {
@@ -336,6 +337,40 @@ const Legal = () => {
                 KPF will acknowledge receipt of your complaint and work toward resolution within 60
                 days. Complex cases may require additional time. KPF strictly prohibits retaliation
                 against anyone who files a complaint or participates in an investigation.
+              </p>
+            </section>
+          </article>
+        )}
+        {/* Mental Health Services Disclosure */}
+        {active === 'mental-health' && (
+          <article id="tabpanel-mental-health" role="tabpanel" aria-labelledby="tab-mental-health" className="prose prose-invert max-w-none space-y-8 text-muted-foreground leading-relaxed">
+            <section>
+              <h2 className="font-display uppercase text-foreground text-xl mb-3">Mental Health Services Disclosure</h2>
+              <p>
+                Keep Pedaling Foundation (KPF) is not a licensed mental health provider and does not
+                provide therapy, psychiatric services, diagnoses, or medical advice. KPF's role is to
+                connect individuals with qualified mental health resources and licensed professionals
+                through our community support programs.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="font-display uppercase text-foreground text-xl mb-3">Provider Information</h2>
+              <p>
+                Participants who receive mental health services through KPF's programs are connected
+                with licensed therapists, counseling practices, and approved mental health providers.
+                In some cases, participants may receive counseling services from a Registered Mental
+                Health Counselor Intern (RMHCI) who is completing required clinical hours. Any services
+                provided by an RMHCI are conducted under the supervision of a licensed mental health
+                professional in accordance with applicable laws and professional standards.
+              </p>
+            </section>
+
+            <section>
+              <h2 className="font-display uppercase text-foreground text-xl mb-3">Limitations</h2>
+              <p>
+                KPF does not guarantee specific outcomes from counseling services and encourages
+                participants to seek appropriate professional support based on their individual needs.
               </p>
             </section>
           </article>
