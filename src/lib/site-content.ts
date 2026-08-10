@@ -47,8 +47,8 @@ export const defaultSiteContent: SiteContent = {
     instagramUrl: "https://www.instagram.com/keeppedalingfoundation/",
     facebookUrl: "https://www.facebook.com/people/Keep-Pedaling-Foundation/61565706314697/",
     tiktokUrl: "https://www.tiktok.com/@keeppedalingfoundation",
-    email: "KeepPedalingFoundation@gmail.com",
-    locationLabel: "Orlando, Florida",
+    email: "info@keeppedalingfoundation.org",
+    locationLabel: "3530 GreatBear Ct, Orlando, FL 32810",
     footerOrganizationLabel: "A 501(c)(3) Nonprofit Organization",
   },
 };
